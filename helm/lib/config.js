@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { vaultPaths } = require('./paths');
 
-const REQUIRED = ['identity', 'schedule', 'paths', 'connectors', 'pods'];
+const REQUIRED = ['identity', 'schedule', 'paths', 'connectors', 'projects'];
 
 function configFile() {
   if (process.env.HELM_CONFIG) return process.env.HELM_CONFIG;

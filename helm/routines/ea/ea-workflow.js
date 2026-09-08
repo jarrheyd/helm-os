@@ -32,7 +32,7 @@ const MEETING_SOURCES_TEXT = MEETING_SOURCES.length ? MEETING_SOURCES.join(', ')
 const POCKET_MCP = (C.connectors && C.connectors.pocketUrl) || 'your note-taker MCP'
 const BOARDS = (C.connectors && C.connectors.ticketBoards) || []
 const BOARDS_TEXT = BOARDS.length ? BOARDS.map(b => b.connector + (b.cloudId ? ' (cloudId '+b.cloudId+')' : '') + ': projects ' + ((b.projectKeys||[]).join(', '))).join('. ') : 'your configured tracker boards'
-const PODS = C.pods || []
+const PROJECTS = C.projects || []
 const AREAS = C.areas || []
 const AREAS_TEXT = AREAS.length ? AREAS.map(a => (a.emoji||'•')+' '+a.name).join(' · ') : 'one stable emoji per area, learned from your config'
 const CARE_RANKING = C.careRanking || []
@@ -145,7 +145,7 @@ const CHATS_SCHEMA = { type: 'object',
     decisions: { type: 'array', items: DECISION },
     ledger_rows_written: { type: 'number' }, failures: { type: 'array', items: { type: 'string' } } } }
 
-// PM delta: a light every-run pass across the boards (2026-08-12, his ask). NOT the heavy pod agents - just
+// PM delta: a light every-run pass across the boards (2026-08-12, his ask). NOT the heavy project agents - just
 // "what changed on a ticket that touches me since last run", so board changes with no email/chat trigger are seen.
 const PM_SCHEMA = { type: 'object',
   required: ['boards_checked', 'boards_failed', 'ticket_changes', 'items', 'digest', 'failures'],
@@ -159,7 +159,7 @@ const PM_SCHEMA = { type: 'object',
     failures: { type: 'array', items: { type: 'string' } } } }
 
 const MEET_SCHEMA = { type: 'object',
-  required: ['meetings_processed', 'summaries', 'not_captured', 'commitments_ledgered', 'decisions', 'prep_blocks', 'pods_touched', 'failures'],
+  required: ['meetings_processed', 'summaries', 'not_captured', 'commitments_ledgered', 'decisions', 'prep_blocks', 'projects_touched', 'failures'],
   properties: { meetings_processed: { type: 'array', items: { type: 'string' } },
     summaries: { type: 'array', items: { type: 'object',
       required: ['title', 'when', 'area', 'gist', 'file'],
@@ -170,7 +170,7 @@ const MEET_SCHEMA = { type: 'object',
     not_captured: { type: 'array', items: { type: 'string' } },
     commitments_ledgered: { type: 'number' }, decisions: { type: 'array', items: DECISION },
     prep_blocks: { type: 'array', items: { type: 'string' } },
-    pods_touched: { type: 'array', items: { type: 'string' } },
+    projects_touched: { type: 'array', items: { type: 'string' } },
     // items: his open Pocket action items (+ meeting actions owed by him) that need him soon -> surface in NEEDS YOU
     items: { type: 'array', items: ITEM },
     failures: { type: 'array', items: { type: 'string' } } } }
@@ -205,24 +205,24 @@ POPULATE read_summary EVERY run, and make each line SPECIFIC + DISAMBIGUATING (2
     { label: 'sweep:email', phase: 'Sweep', schema: EMAIL_SCHEMA, effort: SWEEP_EFFORT })),
   withRetry('chats', () => agent(`${COMMON}${GATE}
 Apply the MANDATORY CROSS-SURFACE RESOLUTION CHECK above to every red/yellow you emit - his Google Chat and Gmail sent are the two surfaces that most often already carry the answer.
-STAGE: CHATS. FULL CHANNEL COVERAGE EVERY RUN (2026-08-12, his rule: "every scan should scan all the tools, all messaging channels, not just start and end"). Every mode including CAPTURE sweeps ALL of: Discord - SERVER-WIDE SEARCH ONLY, exactly two calls: authored (authorId ${DISCORD.authorId}) + mentions (mentions ${DISCORD.authorId}) on guild ${DISCORD.guildId}, then a ~50-message context window around each hit (widened from 20, 2026-08-26). NEVER read Discord channel by channel, never walk a watchlist, never touch discord-state.md (his rule 2026-08-16). Reading a named channel is project research for a PM/pod dig only, never triage. A 403 on some channel is NOT a coverage gap and never appears in the brief; the only Discord failure worth reporting is the server-wide search itself failing, Telegram all-unreads with pod carve-outs, WhatsApp via whatsapp-ro, iMessage unreads, Google Chat (resolve space IDs first), Messenger via the logged-in Chrome (actually attempt it, start the browser session if needed - "not attempted" is a failure now, not a default). List every channel group you actually swept and every one that failed with the exact error - an unswept surface is never "quiet". Capture his own sent messages TWO ways: (a) voice learning; (b) SELF-COMMITMENTS - any promise he made ('will send today', 'I'll get this tomorrow', 'by EOD', a promised deliverable/date) becomes a ledger row owner=${OWNER} with the deadline resolved to a real date. These are verified FIRST next run: no evidence he delivered by the deadline = a NOW-lane red + chip, fired BEFORE the recipient chases him (assistant.md 'His own promises'). Decision-shaped asks go in the decisions field - but FIRST ls ${VAULT}/_decisions/ + grep ledger for 'decision framed'; already-framed decisions are never re-emitted.
+STAGE: CHATS. FULL CHANNEL COVERAGE EVERY RUN (2026-08-12, his rule: "every scan should scan all the tools, all messaging channels, not just start and end"). Every mode including CAPTURE sweeps ALL of: Discord - SERVER-WIDE SEARCH ONLY, exactly two calls: authored (authorId ${DISCORD.authorId}) + mentions (mentions ${DISCORD.authorId}) on guild ${DISCORD.guildId}, then a ~50-message context window around each hit (widened from 20, 2026-08-26). NEVER read Discord channel by channel, never walk a watchlist, never touch discord-state.md (his rule 2026-08-16). Reading a named channel is project research for a PM/project dig only, never triage. A 403 on some channel is NOT a coverage gap and never appears in the brief; the only Discord failure worth reporting is the server-wide search itself failing, Telegram all-unreads with project carve-outs, WhatsApp via whatsapp-ro, iMessage unreads, Google Chat (resolve space IDs first), Messenger via the logged-in Chrome (actually attempt it, start the browser session if needed - "not attempted" is a failure now, not a default). List every channel group you actually swept and every one that failed with the exact error - an unswept surface is never "quiet". Capture his own sent messages TWO ways: (a) voice learning; (b) SELF-COMMITMENTS - any promise he made ('will send today', 'I'll get this tomorrow', 'by EOD', a promised deliverable/date) becomes a ledger row owner=${OWNER} with the deadline resolved to a real date. These are verified FIRST next run: no evidence he delivered by the deadline = a NOW-lane red + chip, fired BEFORE the recipient chases him (assistant.md 'His own promises'). Decision-shaped asks go in the decisions field - but FIRST ls ${VAULT}/_decisions/ + grep ledger for 'decision framed'; already-framed decisions are never re-emitted.
 POPULATE channel_digests EVERY run (2026-08-12, he flagged he could not see the WhatsApp/Telegram/Discord discussion): one {channel, digest} per channel that actually moved - 1-3 plain lines of what was DISCUSSED, not just action items, so he sees the conversation without opening the app. Client channels and active project threads always get a digest when they moved; pure noise channels are skipped. This is separate from items (action-worthy) - a channel can have a digest and no items.`,
     { label: 'sweep:chats', phase: 'Sweep', schema: CHATS_SCHEMA, effort: SWEEP_EFFORT })),
   withRetry('meetings', () => agent(`${COMMON}${GATE}
 STAGE: MEETINGS. Follow assistant.md "Meetings": your meeting sources (${MEETING_SOURCES_TEXT}), anything ended in the window, dedup, process into vault + ledger. Calendar meetings recorded in neither source go in not_captured. For calendar meetings starting within ~2h that are substantive, write the PREP block text into prep_blocks. Decisions made IN meetings that still need ${OWNER} go in decisions.
 SAVE + INDEX EVERY MEETING (2026-08-17, he flagged "I cant find my meeting notes"): for each processed meeting, WRITE a full minute file to ${VAULT}/_meetings/YYYY-MM-DD-<slug>.md (ONE place - root _meetings/, not scattered in project folders; tag the project inside the file) - attendees, decisions, actions with owners, and the plain-language summary. THEN append a row to ${VAULT}/_meetings/INDEX.md (the browsable log: | date | meeting | project | [open](path) |, newest first). A meeting digested but not saved-and-indexed is a FAILURE - capture without a findable file is the exact thing he flagged. Return the saved file paths in meetings_processed.
 BRIEF SUMMARIES (2026-08-20, his ask: "summarize the meetings every triage - no need for full minutes ... but full minutes should be in my OS"). The full minute file above stays exactly as is - that is the OS record. IN ADDITION, for every meeting processed this run, return a "summaries" entry: title, when (time Manila), area (project), gist = ONE or TWO short lines in his voice covering what was settled and what it changes, plus his_actions = only what HE owes (owner ${OWNER}), each <= ~10 words, empty array if none. Gist is headline altitude - no attendee lists, no ticket numbers, no agenda replay, no "we discussed". A meeting he did NOT join is not summarised; it goes to not_captured.
-PM/BA SYNC (assistant.md "PM/BA execution"): for every processed meeting, extract each ticket-affecting outcome (scope change, decision, blocker, new request, status stated out loud) into that project's intake.md as a row quoting what was said + which ticket it touches, and list the project's pod-map key in pods_touched. The pod agent writes the tickets - your job is that nothing said in a meeting dies in the vault.
+PM/BA SYNC (assistant.md "PM/BA execution"): for every processed meeting, extract each ticket-affecting outcome (scope change, decision, blocker, new request, status stated out loud) into that project's intake.md as a row quoting what was said + which ticket it touches, and list the project's project-map key in projects_touched. The project agent writes the tickets - your job is that nothing said in a meeting dies in the vault.
 POCKET SOURCE (2026-08-20, his ask - Pocket is now a triage source). your note-taker (${POCKET_MCP}) is his AI note-taker. Load its tools via ToolSearch ("select:search_pocket_actionitems,search_pocket_conversations,query_pocket_meetings,get_pocket_conversation,list_pocket_folders"), then for the run window ${since}:
 - Treat Pocket meetings/notes like any other meeting source above: pull recent conversations/meetings (query_pocket_meetings / search_pocket_conversations), DEDUP against Tactiq/Read AI (the same meeting from two sources is ONE minute file, not two), save + index the minute file, and add a summaries entry. Only meetings he actually joined.
 - Pull his OPEN action items (search_pocket_actionitems). Each one assigned to ${OWNER} becomes a ledger row (owner ${OWNER}, deadline resolved to a real date) exactly like a meeting commitment; the ones that genuinely need him soon ALSO go in items[] as 🔴/🟡 so they surface in NEEDS YOU. Skip any action item already struck in the ledger or already marked done in Pocket (resolution-check first). If he has clearly completed one elsewhere, you may update_pocket_actionitem to done and note it - never invent completion.
 - FAIL-SOFT: if Pocket tools do not load or return 401/needs-auth (not yet connected), put ONE line in failures ("Pocket not connected - authenticate via /mcp") and continue. Never break the run over Pocket.`,
     { label: 'sweep:meetings', phase: 'Sweep', schema: MEET_SCHEMA, effort: SWEEP_EFFORT })),
   withRetry('pm', () => agent(`${COMMON}${GATE}
-STAGE: PM DELTA (2026-08-12, his rule "every scan should scan all the tools" - PM boards were only caught via notification email + event-driven pods; this closes that seam). A LIGHT read-only pass, NOT the heavy pod agents (those still fire on movement/intake). Across every reachable PM board, find only what CHANGED since the last run and touches ${OWNER}:
+STAGE: PM DELTA (2026-08-12, his rule "every scan should scan all the tools" - PM boards were only caught via notification email + event-driven projects; this closes that seam). A LIGHT read-only pass, NOT the heavy project agents (those still fire on movement/intake). Across every reachable PM board, find only what CHANGED since the last run and touches ${OWNER}:
 - Boards: ${BOARDS_TEXT}. Load each connector via ToolSearch.
 - For each board run ONE cheap query for tickets updated since the last EA run (~2-3h, or since yesterday 8pm on the MORNING run) that are: assigned to ${OWNER}, @mention him, OR changed status/priority. JQL like: assignee was/is currentUser() OR comment ~ ${OWNER}, updated >= "-3h", ORDER BY updated. Do NOT pull whole backlogs - just the delta.
-- ticket_changes: one row per changed ticket {ref, board, what_changed}. items: ONLY the few that genuinely need him (a ticket newly assigned to him, a blocker on his call, an approval overdue) as ITEM rows so they hit the lanes/chips - most changes are just awareness, not items. digest: one short block naming the notable moves for the brief. Board unreachable/403 = a boards_failed entry with the exact error, never silent. READ-ONLY: never comment or transition here (the pods own writes).`,
+- ticket_changes: one row per changed ticket {ref, board, what_changed}. items: ONLY the few that genuinely need him (a ticket newly assigned to him, a blocker on his call, an approval overdue) as ITEM rows so they hit the lanes/chips - most changes are just awareness, not items. digest: one short block naming the notable moves for the brief. Board unreachable/403 = a boards_failed entry with the exact error, never silent. READ-ONLY: never comment or transition here (the projects own writes).`,
     { label: 'sweep:pm', phase: 'Sweep', schema: PM_SCHEMA, effort: SWEEP_EFFORT })),
 ])
 
@@ -254,20 +254,20 @@ const files = framed.filter(Boolean).filter(f => f.file_written)
 const spawnState = framed.filter(Boolean).map(f => f.spawn).includes('ok') ? 'ok'
   : (framed.length ? `unavailable (${framed.filter(Boolean)[0]?.spawn || 'none attempted'})` : 'n/a (no decisions this run)')
 
-// POD FIRING (replaces pm-dispatcher, retired 2026-08-05): fire the pod agent for any project whose intake.md
+// POD FIRING (replaces pm-dispatcher, retired 2026-08-05): fire the project agent for any project whose intake.md
 // has pending rows after the sweeps, or that a sweep flagged as moved. Cap 3/run, nearest-deadline first.
-const podKeys = [...new Set(S.flatMap(r => (r.items || []).map(i => i.what.match(/→ (\w[\w-]*) intake/) ? RegExp.$1 : null)).filter(Boolean)
-  .concat(meetings ? meetings.pods_touched || [] : []))]
-const POD_BY_KEY = Object.fromEntries(PODS.map(p => [p.key, p]))
-const toFire = podKeys.filter(k => POD_BY_KEY[k]).slice(0, 3)
+const touchedKeys = [...new Set(S.flatMap(r => (r.items || []).map(i => i.what.match(/→ (\w[\w-]*) intake/) ? RegExp.$1 : null)).filter(Boolean)
+  .concat(meetings ? meetings.projects_touched || [] : []))]
+const PROJECT_BY_KEY = Object.fromEntries(PROJECTS.map(p => [p.key, p]))
+const toFire = touchedKeys.filter(k => PROJECT_BY_KEY[k]).slice(0, 3)
 if (toFire.length) await parallel(toFire.map(k => () => {
-  const pod = POD_BY_KEY[k]
-  const podOpts = { label: `pod:${k}`, phase: 'Work', effort: 'medium' }
-  if (pod.agentType) podOpts.agentType = pod.agentType
-  return agent(`Run the pod sweep for "${pod.label || k}" now (fired by the EA run at ${now}; window ${since}). You are the generic pod-runner following _meta/pod-template.md. Sweep this pod's channels: ${JSON.stringify(pod.channels || [])}. Process this pod's intake.md FIRST - meeting-sourced rows become ticket writes the SAME run: dated comments / explicit status moves, written AS ${OWNER} (first person, their voice, never third person), only what is quoteable from the source, and every write passes the write-ledger gate. Report nudges to the shared ledger with source tag ${pod.ledgerTag || k}; keep your own cursors.${pod.bespoke ? ' A bespoke override for this pod lives at ' + pod.bespoke + ' - follow it where it applies.' : ''}`,
-    podOpts)
+  const project = PROJECT_BY_KEY[k]
+  const projectOpts = { label: `project:${k}`, phase: 'Work', effort: 'medium' }
+  if (project.agentType) projectOpts.agentType = project.agentType
+  return agent(`Run the project sweep for "${project.label || k}" now (fired by the EA run at ${now}; window ${since}). You are the generic project-runner following _meta/project-template.md. Sweep this project's channels: ${JSON.stringify(project.channels || [])}. Process this project's intake.md FIRST - meeting-sourced rows become ticket writes the SAME run: dated comments / explicit status moves, written AS ${OWNER} (first person, their voice, never third person), only what is quoteable from the source, and every write passes the write-ledger gate. Report nudges to the shared ledger with source tag ${project.ledgerTag || k}; keep your own cursors.${project.bespoke ? ' A bespoke override for this project lives at ' + project.bespoke + ' - follow it where it applies.' : ''}`,
+    projectOpts)
 }))
-if (podKeys.length > 3) log(`pod firing capped: ran ${toFire.join(',')} - deferred ${podKeys.filter(k => !toFire.includes(k)).join(',')}`)
+if (touchedKeys.length > 3) log(`project firing capped: ran ${toFire.join(',')} - deferred ${touchedKeys.filter(k => !toFire.includes(k)).join(',')}`)
 
 // DRAFT OUTCOME CAPTURE (2026-08-16, OS opt). draft-log.md recorded what was WRITTEN and never went back to
 // see what happened to it: 15 outcomes on file, 11 "unsent", 5 "sent-edited", ZERO "sent as-is" - not because
@@ -301,19 +301,19 @@ Return the tally. Be honest: a draft you could not resolve counts as unresolved,
   if (draftOutcomes) log(`draft outcomes: ${draftOutcomes.tally_line}`)
 }
 
-// EOD PRESENCE (optional, per pod): for any pod that opted into a daily presence nudge (a `presence` field in
+// EOD PRESENCE (optional, per project): for any project that opted into a daily presence nudge (a `presence` field in
 // config), draft 1-2 natural messages from the day's real context so ${OWNER} stays visibly present in that
 // relationship. Draft-only, they post themselves. This generalizes what was a single hardcoded client ritual.
 if (mode === 'EVENING') {
-  const presencePods = PODS.filter(p => p.presence)
-  if (presencePods.length) await parallel(presencePods.map(pod => () =>
+  const presenceProjects = PROJECTS.filter(p => p.presence)
+  if (presenceProjects.length) await parallel(presenceProjects.map(project => () =>
     agent(`${COMMON}${GATE}
-STAGE: EOD PRESENCE for "${pod.label || pod.key}". Goal: ${OWNER} should say something in ${(pod.presence && pod.presence.channel) || 'the pod channel'} most days, to stay present in the relationship. Make that effortless.
-1. Read TODAY's context for this pod: today's dated section of ${VAULT}/_today.md, this pod's status file (${pod.statusFile || 'its status.md'}), and the channel itself (recent messages - what did the contact say, is anything unanswered, did something ship tonight, a win, a question worth asking).
-2. Draft 1-2 NATURAL message options in ${OWNER}'s register for that channel (warm, concise, first person, the way they actually talk to this contact - reference _meta/voice-learning.md; never a bulletin, never a themed card). ALWAYS PROACTIVE - pull the angle from the pod's real intelligence (adoption, sentiment, an upcoming ship, a trend), never manufacture internal noise.
+STAGE: EOD PRESENCE for "${project.label || project.key}". Goal: ${OWNER} should say something in ${(project.presence && project.presence.channel) || 'the project channel'} most days, to stay present in the relationship. Make that effortless.
+1. Read TODAY's context for this project: today's dated section of ${VAULT}/_today.md, this project's status file (${project.statusFile || 'its status.md'}), and the channel itself (recent messages - what did the contact say, is anything unanswered, did something ship tonight, a win, a question worth asking).
+2. Draft 1-2 NATURAL message options in ${OWNER}'s register for that channel (warm, concise, first person, the way they actually talk to this contact - reference _meta/voice-learning.md; never a bulletin, never a themed card). ALWAYS PROACTIVE - pull the angle from the project's real intelligence (adoption, sentiment, an upcoming ship, a trend), never manufacture internal noise.
 3. spawn_task a chip whose prompt begins with the standing preamble from ${VAULT}/_meta/chip-preamble.md verbatim ([CREATED_TIME]=${now}) so opening it re-reads the channel live first. Body: the 1-2 drafted options + the one-line hook. DRAFT-ONLY - ${OWNER} edits and posts themselves. Log the draft to ${VAULT}/_meta/draft-log.md so the outcome loop tracks it.
 Return whether a chip was spawned and the angle you chose.`,
-      { label: `presence:${pod.key}`, phase: 'Work', effort: 'medium',
+      { label: `presence:${project.key}`, phase: 'Work', effort: 'medium',
         schema: { type: 'object', required: ['chip_spawned', 'angle'], properties: {
           chip_spawned: { type: 'boolean' }, angle: { type: 'string' }, reason: { type: 'string' } } } })))
 }

@@ -35,7 +35,7 @@ function vaultPaths(vaultRoot) {
       ledgerShadow: p('_meta', '.ledger-shadow.jsonl'),
       retention: p('_meta', 'retention.md'),
       taxonomy: p('_meta', 'taxonomy.md'),
-      podTemplate: p('_meta', 'pod-template.md'),
+      podTemplate: p('_meta', 'project-template.md'),
       chipPreamble: p('_meta', 'chip-preamble.md'),
     },
     people: p('People', 'people.md'),

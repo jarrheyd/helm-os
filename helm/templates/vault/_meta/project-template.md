@@ -1,25 +1,25 @@
-# Pod template: the contract every project follows
+# Project template: the contract every project follows
 
-A pod is one project or mission the OS watches. In helm-os a pod is a row in your config, and one generic runner drives it. This file is the contract the runner follows, and the reference when a pod needs bespoke behavior.
+A project is one project or mission the OS watches. In helm-os a project is a row in your config, and one generic runner drives it. This file is the contract the runner follows, and the reference when a project needs bespoke behavior.
 
-## What a pod guards
+## What a project guards
 The emphasis shifts by engagement type, the mechanics do not.
 
 | Type | Guards |
 |---|---|
-| Product pod (sprints, tickets) | backlog hygiene, sprint scope, refinement questions |
+| Product project (sprints, tickets) | backlog hygiene, sprint scope, refinement questions |
 | Fixed-cost project | scope boundary (out-of-scope work is a change request, never absorbed silently), deadline, deliverables |
 | Partnership | relationship health, effort accounting, per-product state |
 | Account watch | what is pending on your side, deal movement, commitments |
 
-## Files (per pod, in its folder)
+## Files (per project, in its folder)
 | File | Purpose |
 |---|---|
 | `status.md` | current state, rewritten each run, not appended |
-| `intake.md` | queue in: the routine drops items found outside the pod's channels; the pod processes then clears them |
+| `intake.md` | queue in: the routine drops items found outside the project's channels; the project processes then clears them |
 
-## How pods share history
-The vault is the only shared memory. Session history does not carry between runs. Anything that matters, a decision or a client fact, is written to the pod's files in the same run, or it never happened. Every run starts by reading the vault, the pod's status and intake, and the last-swept timestamps.
+## How projects share history
+The vault is the only shared memory. Session history does not carry between runs. Anything that matters, a decision or a client fact, is written to the project's files in the same run, or it never happened. Every run starts by reading the vault, the project's status and intake, and the last-swept timestamps.
 
 ## Behavior contract
 - Chat and email channels are read-only; drafts go to you. Ticket systems are auto-write, in your voice, first person.

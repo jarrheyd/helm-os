@@ -52,8 +52,8 @@ test('os-init scaffold lays down a vault with a valid config', () => {
   const target = path.join(tmp, 'vault');
   const r = scaffold(target);
   assert.ok(fs.existsSync(path.join(target, 'brain.md')));
-  assert.ok(fs.existsSync(path.join(target, '_meta', 'pod-template.md')));
+  assert.ok(fs.existsSync(path.join(target, '_meta', 'project-template.md')));
   const cfg = JSON.parse(fs.readFileSync(r.config, 'utf8'));
   assert.strictEqual(cfg.paths.vaultRoot, target);
-  assert.ok(Array.isArray(cfg.pods));
+  assert.ok(Array.isArray(cfg.projects));
 });

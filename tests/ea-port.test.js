@@ -17,11 +17,11 @@ test('EA workflow is config-driven, not hardcoded', () => {
   // reads config and derives seams from it
   assert.match(s, /A\.config/, 'reads args.config');
   assert.match(s, /SLOTS_TEXT/, 'derives the slot text');
-  assert.match(s, /POD_BY_KEY/, 'fires pods from config, not a hardcoded map');
+  assert.match(s, /PROJECT_BY_KEY/, 'fires projects from config, not a hardcoded map');
   assert.match(s, /BOARDS_TEXT/, 'derives boards from config');
-  // no hardcoded owner vault path or the old pod-agent map
+  // no hardcoded owner vault path or the old project-agent map
   assert.doesNotMatch(s, /com~apple~CloudDocs/, 'no hardcoded vault path');
-  assert.doesNotMatch(s, /healthhub-pm/, 'no hardcoded pod-agent names');
+  assert.doesNotMatch(s, /healthhub-pm/, 'no hardcoded project-agent names');
 });
 
 test('config parity: a config reproduces the seam strings', () => {

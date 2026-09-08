@@ -22,7 +22,7 @@ Two hooks do the work, wired in `settings.json`:
 
 ## Source references
 
-A pod stamps the origin of a request into the ticket description as a trailer on its own line, `[src:<ref>]`, so a later run recognizes the same request. The shapes: `tg:<CHAT>:<msgid>`, `wa:<chat>:<msgid>`, `dc:<channel>:<msgid>`, `mtg:<meeting-id>`, `em:<message-id>`. The ledger is the hard backstop even when a stamp is missing, because it also matches on a normalized summary; the stamp makes the match exact.
+A project stamps the origin of a request into the ticket description as a trailer on its own line, `[src:<ref>]`, so a later run recognizes the same request. The shapes: `tg:<CHAT>:<msgid>`, `wa:<chat>:<msgid>`, `dc:<channel>:<msgid>`, `mtg:<meeting-id>`, `em:<message-id>`. The ledger is the hard backstop even when a stamp is missing, because it also matches on a normalized summary; the stamp makes the match exact.
 
 ## Backfill
 

@@ -10,7 +10,7 @@ Every note has one obvious home. When unsure, it belongs in a project folder or 
 | A meeting's notes | `_meetings/` |
 | A person's role and contact | `People/people.md` |
 | Your voice and preferences | `Personal/profile.md` |
-| A project's working files | a project folder, standard shape per `_meta/pod-template.md` |
+| A project's working files | a project folder, standard shape per `_meta/project-template.md` |
 | Old notes, expired decisions | `_archive/` (create on demand) |
 
 ## Naming

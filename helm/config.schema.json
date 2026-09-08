@@ -1,14 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "helm-os Log config",
-  "description": "Per-user configuration (Log). Supplies every seam the Helm machinery reads. Lives in the user's vault as os.config.json, never in the helm-os repo.",
+  "title": "helm-os config",
+  "description": "Your configuration. Supplies every user-specific value the framework reads (schedule, connectors, projects, voice). Lives in your vault as os.config.json; the framework repo ships none of it.",
   "type": "object",
   "required": [
     "identity",
     "schedule",
     "paths",
     "connectors",
-    "pods"
+    "projects"
   ],
   "additionalProperties": true,
   "properties": {
@@ -163,9 +163,9 @@
       "description": "The user's own ids per connector, used to tell self from others (e.g. Discord authorId/guildId).",
       "additionalProperties": true
     },
-    "pods": {
+    "projects": {
       "type": "array",
-      "description": "The pod-map. Each row is a project/mission the generic pod-runner and portfolio-health drive.",
+      "description": "The project-map. Each row is a project/mission the generic project-runner and portfolio-health drive.",
       "items": {
         "type": "object",
         "required": [
@@ -181,7 +181,7 @@
           },
           "type": {
             "enum": [
-              "product-pod",
+              "product-project",
               "fixed-cost",
               "partnership",
               "account-watch",
@@ -206,7 +206,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Surfaces the pod owns; free text or connector refs."
+            "description": "Surfaces the project owns; free text or connector refs."
           },
           "ledgerTag": {
             "type": "string",
@@ -218,11 +218,11 @@
           },
           "bespoke": {
             "type": "string",
-            "description": "Optional path to a file pod that overrides the generic runner."
+            "description": "Optional path to a file project that overrides the generic runner."
           },
           "agentType": {
             "type": "string",
-            "description": "Optional: a harness subagent type to run this pod instead of the generic runner (preserves a hand-tuned pod agent)."
+            "description": "Optional: a harness subagent type to run this project instead of the generic runner (preserves a hand-tuned project agent)."
           }
         }
       }

@@ -1,42 +1,46 @@
 # helm-os
 
-Run your own OS on your own Claude Code or Cursor. This repo is the framework. Your data stays in your own vault.
+The OS I run my day on, as a framework you can clone and make your own. It sweeps my inbox, chats, meetings and trackers into one brief a few times a day, tracks every project I point it at, and refuses to spam a tracker with something it already wrote.
 
-## The idea
-
-Two layers. Helm is the framework in this repo: the routines, the gates, the setup interview. It is identical for everyone and updates here. Log is your own data: your clients, channels, people, and voice. It lives in your vault, never in this repo.
-
-The test for where anything belongs: would a stranger's copy be identical? If yes it is Helm and ships here. If no it is Log and stays in your vault. A leak check (`npm run leak-check`) enforces it before every push.
+It's a framework, not a service. You clone it into your own vault, run the setup, and from there it's yours to change. Your data, your config and anything you edit live in your vault. This repo is the shared starting point and the updates you can pull when you want them.
 
 ## What it does
 
-- A daily brief that sweeps your email, calendar, chats, and meetings into one read, morning and evening.
-- Project and account tracking: one generic pod-runner watches each project you define in config.
-- A write ledger that stops the OS re-creating tickets or repeating comments it already made, on any tracker connector.
+- **the brief**: morning, noon and evening it reads your email, chats, meetings and tracker boards and hands you one thing to read, grouped by project, leading with what needs you.
+- **project tracking**: one runner watches every project you list in your config - its channels, its intake, its status. Add a project by adding a row, not by writing code.
+- **no double-writes**: a ledger remembers every ticket and comment it made, and a hook blocks a duplicate before it happens, on any tracker connector. This is the part that stops the OS opening a second ticket for something it already filed.
 
 ## Install
 
-You need Node and a harness (Claude Code or Cursor). Setup runs an interview that builds your config and vault:
+You need Node and a harness. Claude Code runs it fully. Cursor runs it too, minus the scheduled runs - set those up with cron or launchd.
 
+Clone it into your vault and set up:
+
+```bash
+git clone https://github.com/jarrheyd/helm-os
+node helm-os/install/os-init/scaffold.js <your-vault-dir>
 ```
-npx helm-os init
-```
 
-It asks your role, connects one comms source to learn your voice, detects your connectors, and asks your cadence. It writes `os.config.json` and a fresh vault, then runs a first brief.
+os-init interviews you: your role, one channel to learn your voice from, your connectors, your projects, and how often you want a brief. It writes your config, lays down your vault, and wires the write-ledger gate for whichever one you run.
 
-Recommended add-on: the skills at `jarrheyd/skills` (deslop, qa-review, product-review). Not required.
+Good alongside it: [jarrheyd/skills](https://github.com/jarrheyd/skills) - deslop, qa-review, product-review. Not required.
+
+## Your data stays yours
+
+The repo ships no one's data - a leak-check (`npm run leak-check`) fails the build if a real name, client or id ever lands in it. Your own copy, in your vault, holds everything: your config, your projects, your voice, and whatever you change. You own that copy and can diverge from the repo whenever you like.
 
 ## Layout
 
 ```
-helm/        the framework: routines, pods, gates, lib, config schema, vault template
-adapters/    wire the framework into Claude Code or Cursor
-install/     the setup interview
+helm/routines      the daily brief and the project health read
+helm/projects      the one runner every project uses
+helm/gates         the write-ledger that blocks double-writes
+helm/lib           the config loader and the one place the vault layout lives
+helm/templates     the vault you start from, plus an example config
+adapters/          wire it into Claude Code or Cursor
+install/os-init    the setup interview
+tests/             node:test, run with npm test
 ```
-
-## Config
-
-Your `os.config.json` is the single seam. Its schema is `helm/config.schema.json`; a filled example is `helm/templates/os.config.example.json`. It names your identity, schedule, connectors, pods, and voice. The framework reads every user-specific value from it, so the same code runs for anyone.
 
 ## License
 

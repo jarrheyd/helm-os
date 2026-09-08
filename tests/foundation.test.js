@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 test('config loader loads the example config', () => {
   const env = { ...process.env, HELM_CONFIG: path.join(ROOT, 'helm/templates/os.config.example.json') };
   const out = execFileSync('node', ['-e',
-    "const {loadConfig}=require('./helm/lib/config.js');const {cfg}=loadConfig();process.stdout.write(String(cfg.pods.length))"],
+    "const {loadConfig}=require('./helm/lib/config.js');const {cfg}=loadConfig();process.stdout.write(String(cfg.projects.length))"],
     { cwd: ROOT, env, encoding: 'utf8' });
   assert.strictEqual(out, '1');
 });
