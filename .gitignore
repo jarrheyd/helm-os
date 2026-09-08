@@ -1,0 +1,5 @@
+node_modules/
+*.log
+.DS_Store
+# never commit a user's Log (their real config lands in their own vault dir, outside this repo)
+/os.config.json

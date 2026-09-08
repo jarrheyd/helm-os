@@ -1,0 +1,10 @@
+{
+  "name": "helm-os",
+  "version": "0.1.0",
+  "description": "Run your own OS on your own Claude Code or Cursor. The framework (Helm); your data stays in your own vault (Log).",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "leak-check": "node scripts/leak-check.js"
+  }
+}

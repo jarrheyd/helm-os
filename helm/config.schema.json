@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "helm-os Log config",
+  "description": "Per-user configuration (Log). Supplies every seam the Helm machinery reads. Lives in the user's vault as os.config.json, never in the helm-os repo.",
+  "type": "object",
+  "required": [
+    "identity",
+    "schedule",
+    "paths",
+    "connectors",
+    "pods"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "identity": {
+      "type": "object",
+      "required": [
+        "name",
+        "timezone"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The principal the OS works for."
+        },
+        "role": {
+          "type": "string",
+          "description": "Job/role; steers the routine preset and vocabulary."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA tz, e.g. Asia/Manila. The clock stage reads this."
+        },
+        "briefAddressee": {
+          "type": "string",
+          "description": "Who the brief is written to (usually the principal)."
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "required": [
+        "slots"
+      ],
+      "properties": {
+        "slots": {
+          "type": "object",
+          "description": "Hour (local, 0-23 as string) to mode. Modes: morning, capture, evening.",
+          "additionalProperties": {
+            "enum": [
+              "morning",
+              "capture",
+              "evening"
+            ]
+          }
+        },
+        "cron": {
+          "type": "string",
+          "description": "Cron the adapter registers the routine with."
+        },
+        "quietDays": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "description": "Weekdays to skip (0=Sun)."
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "required": [
+        "vaultRoot"
+      ],
+      "properties": {
+        "vaultRoot": {
+          "type": "string",
+          "description": "Absolute path to the user's vault. The only absolute path; everything else is resolved relative to it by helm/lib/paths.js."
+        }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": "string",
+          "description": "Vault-relative path to the voice profile (default Personal/profile.md)."
+        }
+      }
+    },
+    "connectors": {
+      "type": "object",
+      "description": "Which tools this user has. Absent connectors are simply skipped by the sweeps.",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email connector id/name."
+        },
+        "calendar": {
+          "type": "string"
+        },
+        "chatSurfaces": {
+          "type": "array",
+          "description": "Chat channels to sweep.",
+          "items": {
+            "type": "object",
+            "required": [
+              "type",
+              "id"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "telegram | whatsapp | discord | slack | teams | gchat | imessage"
+              },
+              "id": {
+                "type": "string",
+                "description": "Channel/space/chat id or handle."
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "meetingSources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "e.g. tactiq, readai, pocket."
+        },
+        "ticketBoards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "connector"
+            ],
+            "properties": {
+              "connector": {
+                "type": "string",
+                "description": "e.g. atlassian, jira, wrike, linear."
+              },
+              "cloudId": {
+                "type": "string"
+              },
+              "projectKeys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "identityIds": {
+      "type": "object",
+      "description": "The user's own ids per connector, used to tell self from others (e.g. Discord authorId/guildId).",
+      "additionalProperties": true
+    },
+    "pods": {
+      "type": "array",
+      "description": "The pod-map. Each row is a project/mission the generic pod-runner and portfolio-health drive.",
+      "items": {
+        "type": "object",
+        "required": [
+          "key"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Join key, stable, never renamed."
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "product-pod",
+              "fixed-cost",
+              "partnership",
+              "account-watch",
+              "delivery"
+            ]
+          },
+          "state": {
+            "enum": [
+              "active",
+              "sales",
+              "maintenance",
+              "paused",
+              "closed"
+            ]
+          },
+          "floor": {
+            "type": "integer",
+            "description": "Weekdays of silence before a sweep fires anyway. Overrides the state default."
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Surfaces the pod owns; free text or connector refs."
+          },
+          "ledgerTag": {
+            "type": "string",
+            "description": "Source tag written into the shared follow-ups ledger."
+          },
+          "statusFile": {
+            "type": "string",
+            "description": "Vault-relative status.md path."
+          },
+          "bespoke": {
+            "type": "string",
+            "description": "Optional path to a file pod that overrides the generic runner."
+          },
+          "agentType": {
+            "type": "string",
+            "description": "Optional: a harness subagent type to run this pod instead of the generic runner (preserves a hand-tuned pod agent)."
+          }
+        }
+      }
+    },
+    "areas": {
+      "type": "array",
+      "description": "Brief taxonomy: how work is grouped and labeled in the composed brief.",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "careRanking": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Priority hierarchy the audio brief weights by, most important first."
+    },
+    "gates": {
+      "type": "object",
+      "properties": {
+        "ledgerEnforce": {
+          "type": "boolean",
+          "description": "false = write-ledger shadow mode, true = block duplicates."
+        },
+        "deslop": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

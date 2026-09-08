@@ -1,0 +1,47 @@
+{
+  "identity": {
+    "name": "Alex Rivera",
+    "role": "Head of Delivery",
+    "timezone": "America/New_York",
+    "briefAddressee": "Alex"
+  },
+  "schedule": {
+    "slots": { "7": "morning", "11": "capture", "14": "capture", "16": "capture", "19": "evening" },
+    "cron": "45 7,11,14,16,19 * * 1-5",
+    "quietDays": [0, 6]
+  },
+  "paths": { "vaultRoot": "/Users/alex/vault" },
+  "voice": { "profile": "Personal/profile.md" },
+  "connectors": {
+    "email": "gmail",
+    "calendar": "google-calendar",
+    "chatSurfaces": [
+      { "type": "slack", "id": "C0123ABC", "label": "delivery-team" },
+      { "type": "discord", "id": "0000000000", "label": "project-x" }
+    ],
+    "meetingSources": ["tactiq", "pocket"],
+    "ticketBoards": [
+      { "connector": "linear", "projectKeys": ["WEB", "API"] },
+      { "connector": "jira", "cloudId": "your-cloud-id", "projectKeys": ["OPS"] }
+    ]
+  },
+  "identityIds": { "discord": { "authorId": "0000000000", "guildId": "1111111111" } },
+  "pods": [
+    {
+      "key": "project-x",
+      "label": "Project X",
+      "type": "delivery",
+      "state": "active",
+      "floor": 2,
+      "channels": ["slack:C0123ABC", "linear:WEB"],
+      "ledgerTag": "PX",
+      "statusFile": "Work/Project X/status.md"
+    }
+  ],
+  "areas": [
+    { "name": "Project X", "emoji": "🚀" },
+    { "name": "Sales", "emoji": "📈" }
+  ],
+  "careRanking": ["delivery", "sales", "team", "admin"],
+  "gates": { "ledgerEnforce": false, "deslop": true }
+}
