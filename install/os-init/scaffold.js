@@ -7,7 +7,7 @@
  * target path. Idempotent per file: it never overwrites an existing vault file.
  *
  * Usage:
- *   node scaffold.js --name "Alex Rivera"            -> ./Alex Rivera OS
+ *   node scaffold.js --name "Alex Rivera" --preset product-manager   -> ./Alex Rivera OS from a role preset
  *   node scaffold.js --name "Alex" /path/to/parent   -> /path/to/parent/Alex OS
  *   node scaffold.js /explicit/vault/dir             -> that exact dir
  * Options: --config <file>  seed from a specific config instead of the example.
@@ -18,6 +18,7 @@ const path = require('path');
 const REPO = path.resolve(__dirname, '..', '..');
 const TEMPLATE = path.join(REPO, 'helm', 'templates', 'vault');
 const EXAMPLE = path.join(REPO, 'helm', 'templates', 'os.config.example.json');
+const PRESETS = path.join(REPO, 'helm', 'templates', 'presets');
 
 function osFolderName(name) {
   const clean = String(name).trim().replace(/\s+/g, ' ');
@@ -68,6 +69,7 @@ function parseArgs(argv) {
     if (argv[i] === '--name') a.name = argv[++i];
     else if (argv[i] === '--config') a.configPath = argv[++i];
     else if (argv[i] === '--no-framework') a.noFramework = true;
+    else if (argv[i] === '--preset') a.preset = argv[++i];
     else a.positional.push(argv[i]);
   }
   return a;
@@ -89,7 +91,8 @@ if (require.main === module) {
     console.error('usage: node scaffold.js --name "<Your Name>" [parentDir]  |  node scaffold.js <vaultDir>');
     process.exit(1);
   }
-  const r = scaffold(target, { name: a.name, configPath: a.configPath, framework: a.noFramework !== true });
+  const configPath = a.configPath || (a.preset ? path.join(PRESETS, a.preset + '.json') : undefined);
+  const r = scaffold(target, { name: a.name, configPath, framework: a.noFramework !== true });
   console.log(`vault scaffolded at ${r.vault}\nconfig at ${r.config}\nframework copied to ${r.vault}/.helm - you can delete the cloned repo now.`);
 }
-module.exports = { scaffold, installFramework, osFolderName, resolveTarget, parseArgs, TEMPLATE, EXAMPLE };
+module.exports = { scaffold, installFramework, osFolderName, resolveTarget, parseArgs, TEMPLATE, EXAMPLE, PRESETS };

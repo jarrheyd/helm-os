@@ -50,3 +50,15 @@ test('scaffold makes the vault self-contained under .helm', () => {
   assert.ok(fs.existsSync(path.join(target, 'brain.md')));
   assert.ok(fs.existsSync(path.join(target, 'os.config.json')));
 });
+
+test('all role presets are valid and load', () => {
+  const { PRESETS } = require('../install/os-init/scaffold.js');
+  const { execFileSync } = require('node:child_process');
+  const ROOT = path.resolve(__dirname, '..');
+  for (const f of fs.readdirSync(PRESETS).filter((x) => x.endsWith('.json'))) {
+    const out = execFileSync('node', ['-e',
+      "const{loadConfig}=require('./helm/lib/config.js');const{cfg}=loadConfig();process.stdout.write(cfg.identity.role)"],
+      { cwd: ROOT, env: { ...process.env, HELM_CONFIG: path.join(PRESETS, f) }, encoding: 'utf8' });
+    assert.ok(out.length > 0, `${f} has a role`);
+  }
+});

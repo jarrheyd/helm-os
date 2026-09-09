@@ -60,7 +60,7 @@ function scaffoldTasks(cfg) {
   const made = [];
   const tasks = [
     { id: 'helm-brief', routine: 'helm/routines/brief/SKILL.md', desc: 'Daily brief (helm-os), config-driven.' },
-    { id: 'helm-project-health', routine: 'helm/routines/project-health/SKILL.md', desc: 'Project health read (helm-os).' },
+    { id: 'helm-project-health', routine: 'helm/routines/project-health/SKILL.md', desc: 'Project health read (helm-os).', cron: '15 8 * * 1-5' },
     { id: 'helm-optimize', routine: 'helm/routines/optimize/SKILL.md', desc: 'Weekly OS upkeep (helm-os): enforce the retention contract.', cron: '0 15 * * 5' },
   ];
   for (const t of tasks) {

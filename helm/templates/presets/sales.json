@@ -1,0 +1,103 @@
+{
+  "identity": {
+    "name": "Jordan Lee",
+    "role": "Sales Lead",
+    "timezone": "America/New_York",
+    "briefAddressee": "Jordan"
+  },
+  "schedule": {
+    "slots": {
+      "7": "morning",
+      "12": "capture",
+      "19": "evening"
+    },
+    "cron": "45 7,12,19 * * 1-5",
+    "quietDays": [
+      0,
+      6
+    ]
+  },
+  "paths": {
+    "vaultRoot": "/path/to/Your Name OS"
+  },
+  "voice": {
+    "profile": "Personal/profile.md"
+  },
+  "connectors": {
+    "email": "gmail",
+    "calendar": "google-calendar",
+    "chatSurfaces": [
+      {
+        "type": "slack",
+        "id": "C-SALES",
+        "label": "sales"
+      }
+    ],
+    "meetingSources": [
+      "fireflies"
+    ],
+    "ticketBoards": [
+      {
+        "connector": "hubspot",
+        "projectKeys": [
+          "PIPELINE"
+        ]
+      }
+    ]
+  },
+  "projects": [
+    {
+      "key": "enterprise",
+      "label": "Enterprise deals",
+      "type": "account-watch",
+      "state": "sales",
+      "floor": 3,
+      "channels": [
+        "slack:C-SALES",
+        "hubspot:PIPELINE"
+      ],
+      "ledgerTag": "ENT",
+      "statusFile": "Work/Enterprise deals/status.md"
+    },
+    {
+      "key": "midmarket",
+      "label": "Mid-market",
+      "type": "account-watch",
+      "state": "sales",
+      "floor": 3,
+      "channels": [
+        "slack:C-SALES"
+      ],
+      "ledgerTag": "MM",
+      "statusFile": "Work/Mid-market/status.md"
+    }
+  ],
+  "areas": [
+    {
+      "name": "Enterprise deals",
+      "emoji": "\ud83c\udfe2"
+    },
+    {
+      "name": "Mid-market",
+      "emoji": "\ud83d\udcca"
+    },
+    {
+      "name": "Follow-ups",
+      "emoji": "\ud83d\udce8"
+    }
+  ],
+  "careRanking": [
+    "pipeline",
+    "deals",
+    "followups",
+    "admin"
+  ],
+  "writes": {
+    "tracker": "draft"
+  },
+  "audio": {
+    "enabled": false,
+    "voice": "Charon",
+    "playerArtifactUrl": ""
+  }
+}

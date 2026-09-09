@@ -281,6 +281,19 @@
           "description": "Standing player URL to republish in place; leave empty to mint a new one each run."
         }
       }
+    },
+    "writes": {
+      "type": "object",
+      "description": "How the OS writes to external systems. Email and chat are always draft-only. This controls trackers.",
+      "properties": {
+        "tracker": {
+          "enum": [
+            "draft",
+            "auto"
+          ],
+          "description": "draft (default): the OS drafts proposed ticket comments/creates into the project's drafts/ for you to apply. auto: it writes them directly in your voice, gated by the write-ledger."
+        }
+      }
     }
   }
 }

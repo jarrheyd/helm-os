@@ -1,0 +1,104 @@
+{
+  "identity": {
+    "name": "Riley Kim",
+    "role": "Product Manager",
+    "timezone": "America/New_York",
+    "briefAddressee": "Riley"
+  },
+  "schedule": {
+    "slots": {
+      "7": "morning",
+      "12": "capture",
+      "19": "evening"
+    },
+    "cron": "45 7,12,19 * * 1-5",
+    "quietDays": [
+      0,
+      6
+    ]
+  },
+  "paths": {
+    "vaultRoot": "/path/to/Your Name OS"
+  },
+  "voice": {
+    "profile": "Personal/profile.md"
+  },
+  "connectors": {
+    "email": "gmail",
+    "calendar": "google-calendar",
+    "chatSurfaces": [
+      {
+        "type": "slack",
+        "id": "C-PROD",
+        "label": "product"
+      }
+    ],
+    "meetingSources": [
+      "tactiq"
+    ],
+    "ticketBoards": [
+      {
+        "connector": "jira",
+        "cloudId": "your-cloud-id",
+        "projectKeys": [
+          "PROD"
+        ]
+      }
+    ]
+  },
+  "projects": [
+    {
+      "key": "checkout",
+      "label": "Checkout squad",
+      "type": "delivery",
+      "state": "active",
+      "floor": 2,
+      "channels": [
+        "slack:C-PROD",
+        "jira:PROD"
+      ],
+      "ledgerTag": "CHK",
+      "statusFile": "Work/Checkout squad/status.md"
+    },
+    {
+      "key": "growth",
+      "label": "Growth squad",
+      "type": "delivery",
+      "state": "active",
+      "floor": 2,
+      "channels": [
+        "slack:C-PROD"
+      ],
+      "ledgerTag": "GRW",
+      "statusFile": "Work/Growth squad/status.md"
+    }
+  ],
+  "areas": [
+    {
+      "name": "Checkout squad",
+      "emoji": "\ud83d\uded2"
+    },
+    {
+      "name": "Growth squad",
+      "emoji": "\ud83c\udf31"
+    },
+    {
+      "name": "Discovery",
+      "emoji": "\ud83d\udd0d"
+    }
+  ],
+  "careRanking": [
+    "delivery",
+    "discovery",
+    "stakeholders",
+    "backlog"
+  ],
+  "writes": {
+    "tracker": "draft"
+  },
+  "audio": {
+    "enabled": false,
+    "voice": "Charon",
+    "playerArtifactUrl": ""
+  }
+}

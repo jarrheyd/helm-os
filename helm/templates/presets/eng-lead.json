@@ -1,0 +1,110 @@
+{
+  "identity": {
+    "name": "Alex Rivera",
+    "role": "Engineering Lead",
+    "timezone": "America/New_York",
+    "briefAddressee": "Alex"
+  },
+  "schedule": {
+    "slots": {
+      "7": "morning",
+      "12": "capture",
+      "19": "evening"
+    },
+    "cron": "45 7,12,19 * * 1-5",
+    "quietDays": [
+      0,
+      6
+    ]
+  },
+  "paths": {
+    "vaultRoot": "/path/to/Your Name OS"
+  },
+  "voice": {
+    "profile": "Personal/profile.md"
+  },
+  "connectors": {
+    "email": "gmail",
+    "calendar": "google-calendar",
+    "chatSurfaces": [
+      {
+        "type": "slack",
+        "id": "C-ENG",
+        "label": "eng"
+      },
+      {
+        "type": "discord",
+        "id": "0",
+        "label": "oncall"
+      }
+    ],
+    "meetingSources": [
+      "tactiq"
+    ],
+    "ticketBoards": [
+      {
+        "connector": "linear",
+        "projectKeys": [
+          "PLAT",
+          "APP"
+        ]
+      }
+    ]
+  },
+  "projects": [
+    {
+      "key": "platform",
+      "label": "Platform",
+      "type": "delivery",
+      "state": "active",
+      "floor": 2,
+      "channels": [
+        "slack:C-ENG",
+        "linear:PLAT"
+      ],
+      "ledgerTag": "PLAT",
+      "statusFile": "Work/Platform/status.md"
+    },
+    {
+      "key": "mobile",
+      "label": "Mobile App",
+      "type": "delivery",
+      "state": "active",
+      "floor": 2,
+      "channels": [
+        "slack:C-ENG",
+        "linear:APP"
+      ],
+      "ledgerTag": "APP",
+      "statusFile": "Work/Mobile App/status.md"
+    }
+  ],
+  "areas": [
+    {
+      "name": "Platform",
+      "emoji": "\ud83d\udee0\ufe0f"
+    },
+    {
+      "name": "Mobile App",
+      "emoji": "\ud83d\udcf1"
+    },
+    {
+      "name": "Incidents",
+      "emoji": "\ud83d\udea8"
+    }
+  ],
+  "careRanking": [
+    "delivery",
+    "incidents",
+    "reviews",
+    "planning"
+  ],
+  "writes": {
+    "tracker": "draft"
+  },
+  "audio": {
+    "enabled": false,
+    "voice": "Charon",
+    "playerArtifactUrl": ""
+  }
+}
