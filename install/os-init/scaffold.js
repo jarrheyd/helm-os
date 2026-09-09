@@ -2,12 +2,15 @@
 'use strict';
 /**
  * Lay down a fresh vault from the template and write an os.config.json.
- * The os-init interview (SKILL.md) gathers answers and calls this to build
- * the Log. Idempotent per file: it never overwrites an existing vault file.
+ * The vault folder is named after the owner: pass a
+ * name and it creates "<Name> OS" in the current directory, or pass an explicit
+ * target path. Idempotent per file: it never overwrites an existing vault file.
  *
- * Usage: node scaffold.js <targetVaultDir> [configJsonPath]
- * If configJsonPath is omitted, the example config is copied as a starting point
- * with its vaultRoot set to the target.
+ * Usage:
+ *   node scaffold.js --name "Alex Rivera"            -> ./Alex Rivera OS
+ *   node scaffold.js --name "Alex" /path/to/parent   -> /path/to/parent/Alex OS
+ *   node scaffold.js /explicit/vault/dir             -> that exact dir
+ * Options: --config <file>  seed from a specific config instead of the example.
  */
 const fs = require('fs');
 const path = require('path');
@@ -15,6 +18,11 @@ const path = require('path');
 const REPO = path.resolve(__dirname, '..', '..');
 const TEMPLATE = path.join(REPO, 'helm', 'templates', 'vault');
 const EXAMPLE = path.join(REPO, 'helm', 'templates', 'os.config.example.json');
+
+function osFolderName(name) {
+  const clean = String(name).trim().replace(/\s+/g, ' ');
+  return /\bos$/i.test(clean) ? clean : `${clean} OS`;
+}
 
 function copyTree(src, dst) {
   fs.mkdirSync(dst, { recursive: true });
@@ -25,11 +33,13 @@ function copyTree(src, dst) {
   }
 }
 
-function scaffold(target, configPath) {
+function scaffold(target, opts = {}) {
   copyTree(TEMPLATE, target);
   const cfgOut = path.join(target, 'os.config.json');
   if (!fs.existsSync(cfgOut)) {
-    let cfg = JSON.parse(fs.readFileSync(configPath || EXAMPLE, 'utf8'));
+    const cfg = JSON.parse(fs.readFileSync(opts.configPath || EXAMPLE, 'utf8'));
+    cfg.identity = cfg.identity || {};
+    if (opts.name) cfg.identity.name = opts.name;
     cfg.paths = cfg.paths || {};
     cfg.paths.vaultRoot = target;
     fs.writeFileSync(cfgOut, JSON.stringify(cfg, null, 2) + '\n');
@@ -37,10 +47,33 @@ function scaffold(target, configPath) {
   return { vault: target, config: cfgOut };
 }
 
+function parseArgs(argv) {
+  const a = { positional: [] };
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--name') a.name = argv[++i];
+    else if (argv[i] === '--config') a.configPath = argv[++i];
+    else a.positional.push(argv[i]);
+  }
+  return a;
+}
+
+function resolveTarget(a) {
+  if (a.name) {
+    const parent = a.positional[0] ? path.resolve(a.positional[0]) : process.cwd();
+    return path.join(parent, osFolderName(a.name));
+  }
+  if (a.positional[0]) return path.resolve(a.positional[0]);
+  return null;
+}
+
 if (require.main === module) {
-  const target = process.argv[2];
-  if (!target) { console.error('usage: node scaffold.js <targetVaultDir> [configJsonPath]'); process.exit(1); }
-  const r = scaffold(path.resolve(target), process.argv[3]);
+  const a = parseArgs(process.argv.slice(2));
+  const target = resolveTarget(a);
+  if (!target) {
+    console.error('usage: node scaffold.js --name "<Your Name>" [parentDir]  |  node scaffold.js <vaultDir>');
+    process.exit(1);
+  }
+  const r = scaffold(target, { name: a.name, configPath: a.configPath });
   console.log(`vault scaffolded at ${r.vault}\nconfig at ${r.config}`);
 }
-module.exports = { scaffold, TEMPLATE, EXAMPLE };
+module.exports = { scaffold, osFolderName, resolveTarget, parseArgs, TEMPLATE, EXAMPLE };
