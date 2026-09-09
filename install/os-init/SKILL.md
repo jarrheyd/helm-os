@@ -10,7 +10,7 @@ This stands up your OS. It asks a short, fixed set of questions and only digs de
 ## The interview
 1. Your name and your role. Your name names the OS: the vault folder defaults to "[Your Name] OS", and you can rename it later. Your role seeds your profile and picks sensible defaults for what the OS tracks.
 2. One comms source to connect now. It reads a sample of your recent sent messages and seeds your voice profile from how you actually write, never from a description.
-3. Your connectors. It detects what you have available and asks which trackers and which channels matter. Absent ones are simply skipped.
+3. Your connectors. If you already run Claude Code or Codex you likely have MCP servers set up, so it reads those first (`node install/os-init/detect-connectors.js`), proposes what it found grouped by kind (email, chat, meetings, trackers), and only asks for what is missing. Absent ones are simply skipped.
 4. Your projects. Each becomes a project row: its channels, its type, and how tight its staleness floor should be.
 5. Your cadence. Morning, evening, or both, and whether you want an audio brief. Audio is worth it on a commute or hands-busy, and costs a few minutes and some tokens per run. If you want audio, set a Gemini API key in your environment (`export GEMINI_TTS_KEY=...`) yourself - the OS reads it from there and never takes the key from you. Without it, audio fails soft and the text brief still runs.
 
