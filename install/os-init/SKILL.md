@@ -5,7 +5,7 @@ description: Set up a new OS. An interview that builds your config and vault, th
 
 # os init
 
-This stands up your OS. It asks a short, fixed set of questions and only digs deeper when an answer is unclear. It ends by writing your `os.config.json` and vault, then running a first brief so you see the value immediately.
+This stands up your OS. It asks a short, fixed set of questions and grills where it needs to: if an answer is thin or ambiguous - a vague role, a project whose channels are unclear, a voice sample too small to learn from - it asks focused follow-ups one at a time until that piece is concrete, before writing anything. A wrong config is worse than one more question. It ends by writing your `os.config.json` and vault, then running a first brief so you see the value immediately.
 
 ## The interview
 1. Your name and your role. Your name names the OS: the vault folder defaults to "[Your Name] OS", and you can rename it later. Your role seeds your profile and picks sensible defaults for what the OS tracks.

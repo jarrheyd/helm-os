@@ -15,38 +15,33 @@ test('claude-code adapter wires and removes the ledger hooks', () => {
   const cc = require('../adapters/claude-code/install.js');
   cc.wireHooks(false);
   let s = JSON.parse(fs.readFileSync(settings, 'utf8'));
-  const pre = JSON.stringify(s.hooks.PreToolUse);
-  const post = JSON.stringify(s.hooks.PostToolUse);
-  assert.match(pre, /ledger_check_hook\.py/);
-  assert.match(post, /ledger_record_hook\.py/);
-  // idempotent: a second wire does not duplicate
-  cc.wireHooks(false);
+  assert.match(JSON.stringify(s.hooks.PreToolUse), /ledger_check_hook\.py/);
+  assert.match(JSON.stringify(s.hooks.PostToolUse), /ledger_record_hook\.py/);
+  cc.wireHooks(false); // idempotent
   s = JSON.parse(fs.readFileSync(settings, 'utf8'));
   assert.strictEqual(s.hooks.PreToolUse.filter((e) => JSON.stringify(e).includes('ledger_check_hook.py')).length, 1);
-  // remove
   cc.wireHooks(true);
   s = JSON.parse(fs.readFileSync(settings, 'utf8'));
   assert.doesNotMatch(JSON.stringify(s.hooks), /ledger_(check|record)_hook\.py/);
   delete process.env.HELM_SETTINGS;
 });
 
-test('codex adapter writes and removes its launchd schedule', () => {
+test('codex adapter writes and removes all three launchd jobs', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helm-codex-'));
   process.env.HELM_LAUNCH_DIR = tmp;
   process.env.HELM_CONFIG = path.join(ROOT, 'helm/templates/os.config.example.json');
   delete require.cache[require.resolve('../adapters/codex/install.js')];
   const cx = require('../adapters/codex/install.js');
-  cx.install(false);
-  const plist = cx.plistPath();
-  const xml = fs.readFileSync(plist, 'utf8');
-  assert.match(xml, /codex/, 'runs codex exec');
-  assert.match(xml, /StartCalendarInterval/, 'has a schedule');
-  assert.match(xml, /<key>Hour<\/key><integer>7<\/integer>/, 'includes the morning slot');
-  // one entry per slot-hour x 5 weekdays
-  const cals = cx.calendarIntervals({ schedule: { slots: { '7': 'morning', '12': 'capture', '19': 'evening' } } });
-  assert.strictEqual(cals.length, 15);
+  const made = cx.install(false);
+  assert.deepStrictEqual(made.sort(), ['com.helm-os.brief', 'com.helm-os.optimize', 'com.helm-os.project-health']);
+  const brief = fs.readFileSync(cx.plistPath('com.helm-os.brief'), 'utf8');
+  assert.match(brief, /codex/);
+  assert.match(brief, /<key>Hour<\/key><integer>7<\/integer>/);
+  const opt = fs.readFileSync(cx.plistPath('com.helm-os.optimize'), 'utf8');
+  assert.match(opt, /<key>Weekday<\/key><integer>5<\/integer>/);
+  assert.strictEqual(cx.briefIntervals({ schedule: { slots: { '7': 'm', '12': 'c', '19': 'e' } } }).length, 15);
   cx.install(true);
-  assert.ok(!fs.existsSync(plist));
+  assert.ok(!fs.existsSync(cx.plistPath('com.helm-os.brief')));
   delete process.env.HELM_LAUNCH_DIR;
   delete process.env.HELM_CONFIG;
 });
@@ -57,6 +52,7 @@ test('os-init scaffold lays down a vault with a valid config', () => {
   const target = path.join(tmp, 'vault');
   const r = scaffold(target);
   assert.ok(fs.existsSync(path.join(target, 'brain.md')));
+  assert.ok(fs.existsSync(path.join(target, 'CLAUDE.md')));
   assert.ok(fs.existsSync(path.join(target, '_meta', 'project-template.md')));
   const cfg = JSON.parse(fs.readFileSync(r.config, 'utf8'));
   assert.strictEqual(cfg.paths.vaultRoot, target);
