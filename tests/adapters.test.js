@@ -30,20 +30,25 @@ test('claude-code adapter wires and removes the ledger hooks', () => {
   delete process.env.HELM_SETTINGS;
 });
 
-test('cursor adapter writes and removes its hooks', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helm-cur-'));
-  process.env.HELM_CURSOR_DIR = tmp;
-  delete require.cache[require.resolve('../adapters/cursor/install.js')];
-  const cur = require('../adapters/cursor/install.js');
-  cur.wireHooks(false);
-  const hp = path.join(tmp, 'hooks.json');
-  let h = JSON.parse(fs.readFileSync(hp, 'utf8'));
-  assert.match(JSON.stringify(h.hooks.beforeToolUse), /ledger_check_hook\.py/);
-  assert.match(JSON.stringify(h.hooks.afterToolUse), /ledger_record_hook\.py/);
-  cur.wireHooks(true);
-  h = JSON.parse(fs.readFileSync(hp, 'utf8'));
-  assert.doesNotMatch(JSON.stringify(h.hooks), /ledger_(check|record)_hook\.py/);
-  delete process.env.HELM_CURSOR_DIR;
+test('codex adapter writes and removes its launchd schedule', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helm-codex-'));
+  process.env.HELM_LAUNCH_DIR = tmp;
+  process.env.HELM_CONFIG = path.join(ROOT, 'helm/templates/os.config.example.json');
+  delete require.cache[require.resolve('../adapters/codex/install.js')];
+  const cx = require('../adapters/codex/install.js');
+  cx.install(false);
+  const plist = cx.plistPath();
+  const xml = fs.readFileSync(plist, 'utf8');
+  assert.match(xml, /codex/, 'runs codex exec');
+  assert.match(xml, /StartCalendarInterval/, 'has a schedule');
+  assert.match(xml, /<key>Hour<\/key><integer>7<\/integer>/, 'includes the morning slot');
+  // one entry per slot-hour x 5 weekdays
+  const cals = cx.calendarIntervals({ schedule: { slots: { '7': 'morning', '12': 'capture', '19': 'evening' } } });
+  assert.strictEqual(cals.length, 15);
+  cx.install(true);
+  assert.ok(!fs.existsSync(plist));
+  delete process.env.HELM_LAUNCH_DIR;
+  delete process.env.HELM_CONFIG;
 });
 
 test('os-init scaffold lays down a vault with a valid config', () => {

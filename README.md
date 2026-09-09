@@ -12,7 +12,7 @@ It's a framework, not a service. You clone it into your own vault, run the setup
 
 ## Install
 
-You need Node and a harness. Claude Code runs it fully. Cursor runs it too, minus the scheduled runs - set those up with cron or launchd.
+You need Node and a runner. Claude Code runs it fully. Codex runs it too, with two gaps: no per-tool hook, so the write-ledger check runs inside the routine instead of blocking the write; and no scheduler, so you cron or launchd `codex exec`.
 
 Clone it into your vault and set up:
 
@@ -37,7 +37,7 @@ helm/projects      the one runner every project uses
 helm/gates         the write-ledger that blocks double-writes
 helm/lib           the config loader and the one place the vault layout lives
 helm/templates     the vault you start from, plus an example config
-adapters/          wire it into Claude Code or Cursor
+adapters/          wire it into Claude Code or Codex
 install/os-init    the setup interview
 tests/             node:test, run with npm test
 ```

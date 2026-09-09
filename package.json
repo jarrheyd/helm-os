@@ -1,7 +1,7 @@
 {
   "name": "helm-os",
   "version": "0.1.0",
-  "description": "Run your own OS on your own Claude Code or Cursor. The framework (Helm); your data stays in your own vault (Log).",
+  "description": "Run your own OS on your own Claude Code or Codex. A framework you clone into your vault and make your own.",
   "license": "MIT",
   "scripts": {
     "test": "node --test",

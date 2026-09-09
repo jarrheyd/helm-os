@@ -30,4 +30,4 @@ The ledger starts empty, so it cannot catch a re-create of a ticket opened befor
 
 ## Extraction
 
-This is Helm, not personal data. The hooks, the library, and the backfill script belong in the shared OS framework; only the `write-ledger.jsonl` file is per-user Log. When the OS is extracted into its own repo, these move with it and the Cursor adapter wires the same two hooks.
+This is Helm, not personal data. The hooks, the library, and the backfill script belong in the shared OS framework; only the `write-ledger.jsonl` file is per-user Log. On Claude Code the adapter wires these two hooks; on Codex, which has no per-tool-call hook, the same find-or-create dedup runs inside the routine instead.
