@@ -1,4 +1,4 @@
-# helm-os
+# 🚢 helm-os
 
 The OS I run my day on, as a framework you can clone and make your own. It sweeps my inbox, chats, meetings and trackers into one brief a few times a day, tracks every project I point it at, and refuses to spam a tracker with something it already wrote.
 
