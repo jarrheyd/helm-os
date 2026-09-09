@@ -263,6 +263,24 @@
           "type": "boolean"
         }
       }
+    },
+    "audio": {
+      "type": "object",
+      "description": "Audio brief. Needs a Gemini API key in your environment (GEMINI_TTS_KEY or GEMINI_API_KEY); the OS never takes the key value, only reads it from the environment.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Turn the spoken brief on."
+        },
+        "voice": {
+          "type": "string",
+          "description": "Gemini TTS voice (male: Charon, Puck, Fenrir, Enceladus)."
+        },
+        "playerArtifactUrl": {
+          "type": "string",
+          "description": "Standing player URL to republish in place; leave empty to mint a new one each run."
+        }
+      }
     }
   }
 }

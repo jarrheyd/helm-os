@@ -6,26 +6,67 @@
     "briefAddressee": "Alex"
   },
   "schedule": {
-    "slots": { "7": "morning", "11": "capture", "14": "capture", "16": "capture", "19": "evening" },
+    "slots": {
+      "7": "morning",
+      "11": "capture",
+      "14": "capture",
+      "16": "capture",
+      "19": "evening"
+    },
     "cron": "45 7,11,14,16,19 * * 1-5",
-    "quietDays": [0, 6]
+    "quietDays": [
+      0,
+      6
+    ]
   },
-  "paths": { "vaultRoot": "/Users/alex/vault" },
-  "voice": { "profile": "Personal/profile.md" },
+  "paths": {
+    "vaultRoot": "/Users/alex/vault"
+  },
+  "voice": {
+    "profile": "Personal/profile.md"
+  },
   "connectors": {
     "email": "gmail",
     "calendar": "google-calendar",
     "chatSurfaces": [
-      { "type": "slack", "id": "C0123ABC", "label": "delivery-team" },
-      { "type": "discord", "id": "0000000000", "label": "project-x" }
+      {
+        "type": "slack",
+        "id": "C0123ABC",
+        "label": "delivery-team"
+      },
+      {
+        "type": "discord",
+        "id": "0000000000",
+        "label": "project-x"
+      }
     ],
-    "meetingSources": ["tactiq", "pocket"],
+    "meetingSources": [
+      "tactiq",
+      "pocket"
+    ],
     "ticketBoards": [
-      { "connector": "linear", "projectKeys": ["WEB", "API"] },
-      { "connector": "jira", "cloudId": "your-cloud-id", "projectKeys": ["OPS"] }
+      {
+        "connector": "linear",
+        "projectKeys": [
+          "WEB",
+          "API"
+        ]
+      },
+      {
+        "connector": "jira",
+        "cloudId": "your-cloud-id",
+        "projectKeys": [
+          "OPS"
+        ]
+      }
     ]
   },
-  "identityIds": { "discord": { "authorId": "0000000000", "guildId": "1111111111" } },
+  "identityIds": {
+    "discord": {
+      "authorId": "0000000000",
+      "guildId": "1111111111"
+    }
+  },
   "projects": [
     {
       "key": "project-x",
@@ -33,15 +74,37 @@
       "type": "delivery",
       "state": "active",
       "floor": 2,
-      "channels": ["slack:C0123ABC", "linear:WEB"],
+      "channels": [
+        "slack:C0123ABC",
+        "linear:WEB"
+      ],
       "ledgerTag": "PX",
       "statusFile": "Work/Project X/status.md"
     }
   ],
   "areas": [
-    { "name": "Project X", "emoji": "🚀" },
-    { "name": "Sales", "emoji": "📈" }
+    {
+      "name": "Project X",
+      "emoji": "\ud83d\ude80"
+    },
+    {
+      "name": "Sales",
+      "emoji": "\ud83d\udcc8"
+    }
   ],
-  "careRanking": ["delivery", "sales", "team", "admin"],
-  "gates": { "ledgerEnforce": false, "deslop": true }
+  "careRanking": [
+    "delivery",
+    "sales",
+    "team",
+    "admin"
+  ],
+  "gates": {
+    "ledgerEnforce": false,
+    "deslop": true
+  },
+  "audio": {
+    "enabled": false,
+    "voice": "Charon",
+    "playerArtifactUrl": ""
+  }
 }
