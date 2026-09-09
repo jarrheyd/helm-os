@@ -37,7 +37,7 @@ function calendarIntervals(cfg) {
 function plistXml(cfg) {
   const codexBin = path.join(os.homedir(), '.local', 'bin', 'codex');
   const vault = (cfg && cfg.paths && cfg.paths.vaultRoot) || '';
-  const prompt = `Run the helm-os EA routine. Read os.config.json from ${vault}, pick the mode from the local clock per its schedule slots, and execute ${path.join(REPO, 'helm/routines/ea/SKILL.md')} with that mode and config. The write-ledger dedup runs inside the routine.`;
+  const prompt = `Run the helm-os daily brief routine. Read os.config.json from ${vault}, pick the mode from the local clock per its schedule slots, and execute ${path.join(REPO, 'helm/routines/brief/SKILL.md')} with that mode and config. The write-ledger dedup runs inside the routine.`;
   const cals = calendarIntervals(cfg).map((c) =>
     `    <dict><key>Hour</key><integer>${c.Hour}</integer><key>Minute</key><integer>${c.Minute}</integer><key>Weekday</key><integer>${c.Weekday}</integer></dict>`
   ).join('\n');

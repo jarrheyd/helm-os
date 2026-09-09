@@ -5,7 +5,7 @@ description: Run one project's sweep from its config row. The generic runner beh
 
 # Project runner
 
-One runner drives every project. Given a project key, it reads that project's row from your config and follows the project-template contract. The EA run fires it for any project with pending intake; you can also run it directly for one project.
+One runner drives every project. Given a project key, it reads that project's row from your config and follows the project-template contract. The daily brief fires it for any project with pending intake; you can also run it directly for one project.
 
 ## What it does
 1. Read the project's config row: its channels, type, state, ledger tag, and status file.

@@ -1,6 +1,6 @@
-# EA spec
+# Daily brief spec
 
-The contract the EA run follows. The workflow enforces that each stage happens; this file says what each does. Channels, boards, and projects come from your config; this spec is the same for everyone.
+The contract the daily brief follows. The workflow enforces that each stage happens; this file says what each does. Channels, boards, and projects come from your config; this spec is the same for everyone.
 
 ## Modes
 The run has three modes, picked from the local hour against your config's slot map. Morning is a full brief that catches you up since the evening before. Capture is a light midday pass that logs what moved without composing a full brief unless something needs you. Evening closes the day, captures corrections, and rolls the log.

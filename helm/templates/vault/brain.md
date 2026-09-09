@@ -11,4 +11,4 @@ Working memory. Keep this thin: a few standing corrections, current focus, a sma
 ## Pointers
 - Open asks: `_meta/followups.md`
 - Open decisions: `_decisions/`
-- Project health: rolled up daily by portfolio-health
+- Project health: rolled up daily by project-health

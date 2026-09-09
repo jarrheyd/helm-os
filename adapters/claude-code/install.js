@@ -59,8 +59,8 @@ function scaffoldTasks(cfg) {
   const vault = cfg.paths.vaultRoot;
   const made = [];
   const tasks = [
-    { id: 'helm-ea-run', routine: 'helm/routines/ea/SKILL.md', desc: 'EA run (helm-os), config-driven.' },
-    { id: 'helm-portfolio-health', routine: 'helm/routines/portfolio-health/SKILL.md', desc: 'Portfolio health read (helm-os).' },
+    { id: 'helm-brief', routine: 'helm/routines/brief/SKILL.md', desc: 'Daily brief (helm-os), config-driven.' },
+    { id: 'helm-project-health', routine: 'helm/routines/project-health/SKILL.md', desc: 'Project health read (helm-os).' },
   ];
   for (const t of tasks) {
     const tdir = path.join(dir, t.id);

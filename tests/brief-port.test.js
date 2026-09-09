@@ -6,14 +6,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const EA = path.join(ROOT, 'helm/routines/ea/ea-workflow.js');
+const BRIEF = path.join(ROOT, 'helm/routines/brief/brief-workflow.js');
 
-test('ported EA workflow parses', () => {
-  execFileSync('node', ['--check', EA]); // throws on syntax error
+test('ported brief workflow parses', () => {
+  execFileSync('node', ['--check', BRIEF]); // throws on syntax error
 });
 
-test('EA workflow is config-driven, not hardcoded', () => {
-  const s = fs.readFileSync(EA, 'utf8');
+test('brief workflow is config-driven, not hardcoded', () => {
+  const s = fs.readFileSync(BRIEF, 'utf8');
   // reads config and derives seams from it
   assert.match(s, /A\.config/, 'reads args.config');
   assert.match(s, /SLOTS_TEXT/, 'derives the slot text');

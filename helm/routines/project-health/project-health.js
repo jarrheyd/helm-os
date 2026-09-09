@@ -1,5 +1,5 @@
 export const meta = {
-  name: 'portfolio-health',
+  name: 'project-health',
   description: 'Daily breadth-first health read across every configured project. Report-only, never writes to a tracker.',
   phases: [{ title: 'Read' }, { title: 'Compose' }],
 }

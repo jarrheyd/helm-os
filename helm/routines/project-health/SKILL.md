@@ -1,9 +1,9 @@
 ---
-name: portfolio-health
+name: project-health
 description: A daily read across every project, from a health and risk lens. Report-only, never writes to a tracker.
 ---
 
-# Portfolio health
+# Project health
 
 A breadth-first read across every project in your config, once a day. It answers one question: what is at risk. It never advances a cursor or writes to a tracker; it reads the projects' own status files and their channels.
 
