@@ -61,13 +61,15 @@ function scaffoldTasks(cfg) {
   const tasks = [
     { id: 'helm-brief', routine: 'helm/routines/brief/SKILL.md', desc: 'Daily brief (helm-os), config-driven.' },
     { id: 'helm-project-health', routine: 'helm/routines/project-health/SKILL.md', desc: 'Project health read (helm-os).' },
+    { id: 'helm-optimize', routine: 'helm/routines/optimize/SKILL.md', desc: 'Weekly OS upkeep (helm-os): enforce the retention contract.', cron: '0 15 * * 5' },
   ];
   for (const t of tasks) {
     const tdir = path.join(dir, t.id);
     fs.mkdirSync(tdir, { recursive: true });
-    const body = `---\nname: ${t.id}\ndescription: ${t.desc} cron ${cron}\n---\n\nRun the helm-os routine at ${path.join(REPO, t.routine)} with HELM_VAULT=${vault}. Read os.config.json from the vault, pick the mode from the local clock, and invoke the routine's workflow with { mode, now, config }.\n`;
+    const taskCron = t.cron || cron;
+    const body = `---\nname: ${t.id}\ndescription: ${t.desc} cron ${taskCron}\n---\n\nRun the helm-os routine at ${path.join(REPO, t.routine)} with HELM_VAULT=${vault}. Read os.config.json from the vault, pick the mode from the local clock, and invoke the routine's workflow with { mode, now, config }.\n`;
     fs.writeFileSync(path.join(tdir, 'SKILL.md'), body);
-    made.push({ id: t.id, cron });
+    made.push({ id: t.id, cron: t.cron || cron });
   }
   return made;
 }
