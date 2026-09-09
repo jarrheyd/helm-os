@@ -33,8 +33,23 @@ function copyTree(src, dst) {
   }
 }
 
+// Copy the framework itself into <vault>/.helm so the vault is self-contained
+// and the cloned repo can be deleted after setup.
+function installFramework(target) {
+  const dest = path.join(target, '.helm');
+  for (const part of ['helm', 'adapters', 'install', 'scripts', 'package.json']) {
+    const src = path.join(REPO, part);
+    if (!fs.existsSync(src)) continue;
+    const d = path.join(dest, part);
+    if (fs.statSync(src).isDirectory()) copyTree(src, d);
+    else { fs.mkdirSync(path.dirname(d), { recursive: true }); if (!fs.existsSync(d)) fs.copyFileSync(src, d); }
+  }
+  return dest;
+}
+
 function scaffold(target, opts = {}) {
   copyTree(TEMPLATE, target);
+  if (opts.framework) installFramework(target);
   const cfgOut = path.join(target, 'os.config.json');
   if (!fs.existsSync(cfgOut)) {
     const cfg = JSON.parse(fs.readFileSync(opts.configPath || EXAMPLE, 'utf8'));
@@ -52,6 +67,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--name') a.name = argv[++i];
     else if (argv[i] === '--config') a.configPath = argv[++i];
+    else if (argv[i] === '--no-framework') a.noFramework = true;
     else a.positional.push(argv[i]);
   }
   return a;
@@ -73,7 +89,7 @@ if (require.main === module) {
     console.error('usage: node scaffold.js --name "<Your Name>" [parentDir]  |  node scaffold.js <vaultDir>');
     process.exit(1);
   }
-  const r = scaffold(target, { name: a.name, configPath: a.configPath });
-  console.log(`vault scaffolded at ${r.vault}\nconfig at ${r.config}`);
+  const r = scaffold(target, { name: a.name, configPath: a.configPath, framework: a.noFramework !== true });
+  console.log(`vault scaffolded at ${r.vault}\nconfig at ${r.config}\nframework copied to ${r.vault}/.helm - you can delete the cloned repo now.`);
 }
-module.exports = { scaffold, osFolderName, resolveTarget, parseArgs, TEMPLATE, EXAMPLE };
+module.exports = { scaffold, installFramework, osFolderName, resolveTarget, parseArgs, TEMPLATE, EXAMPLE };

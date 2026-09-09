@@ -37,3 +37,16 @@ test('renameOS moves the folder and updates the config', () => {
   assert.strictEqual(cfg.identity.name, 'Sam');
   assert.strictEqual(cfg.paths.vaultRoot, r.vault);
 });
+
+const { installFramework } = require('../install/os-init/scaffold.js');
+test('scaffold makes the vault self-contained under .helm', () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'helm-fw-'));
+  const target = path.join(parent, 'Self OS');
+  scaffold(target, { name: 'Self', framework: true });
+  assert.ok(fs.existsSync(path.join(target, '.helm', 'helm', 'routines', 'brief', 'brief-workflow.js')));
+  assert.ok(fs.existsSync(path.join(target, '.helm', 'adapters', 'codex', 'install.js')));
+  assert.ok(fs.existsSync(path.join(target, '.helm', 'install', 'os-init', 'doctor.js')));
+  // vault content still at root, and the config is there
+  assert.ok(fs.existsSync(path.join(target, 'brain.md')));
+  assert.ok(fs.existsSync(path.join(target, 'os.config.json')));
+});

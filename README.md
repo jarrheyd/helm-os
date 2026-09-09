@@ -12,34 +12,41 @@ It's a framework, not a service. You clone it into your own vault, run the setup
 
 ## Setup
 
-You need Node, a runner, and the MCP connectors for whatever you want it to read - your email, chats, trackers. Claude Code runs it fully. Codex runs it too, with two gaps: no per-tool hook, so the write-ledger check runs inside the routine instead of blocking the write, and no scheduler, so you cron or launchd `codex exec`.
+You need Node, a runner, and the MCP connectors for whatever you want it to read - your email, chats, trackers. Claude Code runs it fully. Codex runs it too, with two gaps: no per-tool hook, so the write-ledger check runs inside the routine instead of blocking the write, and no scheduler, so it schedules `codex exec` through launchd.
 
-1. Clone it:
-
-```bash
-git clone https://github.com/jarrheyd/helm-os
-```
-
-2. Name your OS and lay down your vault:
+1. Clone it, just to run setup:
 
 ```bash
-node helm-os/install/os-init/scaffold.js --name "Your Name"
+git clone https://github.com/jarrheyd/helm-os helm-os-setup
 ```
 
-That makes a `Your Name OS` folder next to you, with a starter config and the empty vault. Rename it later with `install/os-init/rename.js`.
-
-3. Fill in your config. Open `os.config.json` in that folder and set what's yours: your connectors (email, chat channels, tracker boards), your projects (one row each - its channels, its type, how tight its staleness floor), and your schedule slots. The shape is `helm/config.schema.json`; a filled example is `helm/templates/os.config.example.json`.
-
-4. Wire your runner. Point `HELM_VAULT` at your OS folder, then run the adapter:
+2. Name your OS and lay it down. This creates a `Your Name OS` folder with your config, your vault, and the framework copied inside it (under `.helm/`), so the folder is self-contained:
 
 ```bash
-HELM_VAULT="/path/to/Your Name OS" node helm-os/adapters/claude-code/install.js   # Claude Code
-HELM_VAULT="/path/to/Your Name OS" node helm-os/adapters/codex/install.js         # Codex
+node helm-os-setup/install/os-init/scaffold.js --name "Your Name"
 ```
 
-Claude Code gets the write-ledger hooks and the scheduled runs. Codex gets a launchd job on your slots.
+3. Fill in your config. Open `os.config.json` in that folder and set what's yours: your connectors (email, chat channels, tracker boards), your projects (one row each - its channels, its type, how tight its staleness floor), and your schedule slots. The shape is `.helm/helm/config.schema.json`; a filled example is `.helm/helm/templates/os.config.example.json`.
 
-5. Or let os-init do steps 2 to 4 for you. In Claude Code, run the `os-init` skill: it interviews you, learns your voice from one of your real channels, writes the config, and wires the runner. The steps above are the same thing by hand.
+4. Wire your runner, from inside your OS folder:
+
+```bash
+OS="/path/to/Your Name OS"
+HELM_VAULT="$OS" node "$OS/.helm/adapters/claude-code/install.js"   # Claude Code: hooks + scheduled runs
+HELM_VAULT="$OS" node "$OS/.helm/adapters/codex/install.js"         # Codex: launchd schedule
+```
+
+5. Delete the clone. Everything lives in your OS folder now:
+
+```bash
+rm -rf helm-os-setup
+```
+
+## Using it
+
+Open Claude Code or Codex with your OS folder as the working directory, or point it there in what you do. Its `CLAUDE.md` orients the assistant: it reads your `brain.md` first and knows the triggers ("brief me", "project health"). The scheduled brief runs on its own on the cadence you set; you do not need the app open for it.
+
+Faster path: in Claude Code, run the `os-init` skill from the clone instead of steps 2 to 4. It interviews you, grills where an answer is thin, detects the connectors you already have, writes the config, and wires the runner. Then delete the clone.
 
 Good alongside it: [jarrheyd/skills](https://github.com/jarrheyd/skills) - deslop, qa-review, product-review. Not required.
 

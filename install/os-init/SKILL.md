@@ -15,7 +15,7 @@ This stands up your OS. It asks a short, fixed set of questions and grills where
 5. Your cadence. Morning, evening, or both, and whether you want an audio brief. Audio is worth it on a commute or hands-busy, and costs a few minutes and some tokens per run. If you want audio, set a Gemini API key in your environment (`export GEMINI_TTS_KEY=...`) yourself - the OS reads it from there and never takes the key from you. Without it, audio fails soft and the text brief still runs.
 
 ## What it writes
-It writes `os.config.json` to your vault and lays down the vault from the template: your brain, index, follow-ups, retention and taxonomy contracts, a project template, and a voice-profile skeleton seeded from your samples. Then it runs the adapter for your harness to wire the schedule and the write-ledger gate, runs a doctor check, and composes a first brief.
+It writes `os.config.json` to your vault and lays down the vault from the template: your brain, index, follow-ups, retention and taxonomy contracts, a project template, and a voice-profile skeleton seeded from your samples. It also copies the framework into the vault under `.helm/`, so the folder is self-contained and you can delete the cloned repo afterward. Then it runs the adapter for your runner to wire the schedule and the write-ledger gate, runs a doctor check, and composes a first brief.
 
 ## Add-ons
 The skills at jarrheyd/skills (deslop, qa-review, product-review) are offered as a recommended add-on. They are not required and the OS runs without them.
