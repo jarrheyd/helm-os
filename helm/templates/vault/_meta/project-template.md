@@ -37,3 +37,6 @@ Every external tracker write passes the write-ledger gate, so a re-run comments 
 Stamp the source. When you create a ticket, put the originating reference in the description as a trailer on its own line: `[src:<ref>]`. Use shapes like `tg:<chat>:<msgid>`, `dc:<channel>:<msgid>`, `mtg:<meeting-id>`, `em:<message-id>`.
 
 Check before you create. Before opening a ticket for an intake item, search the tracker for that source reference or a near-identical summary. If it exists, comment on it. The ledger is the hard backstop and blocks an exact duplicate on its own; the search also catches tickets made outside the OS.
+
+## Decisions: propose, don't decide (2026-09-10)
+Follow `_meta/decisions.md`. Act freely on reversible work, but never assume on an external or hard-to-undo write, or where scope or voice is unclear. A ticket or code task that is not fully scoped (what changes, how you know it is done, edge cases, dependencies) is not written vague - grill the missing scope as options with a recommendation first, then write it. Surface decisions as a grill-style choice, options plus a recommended one, not a chat prompt. Never auto-act on one that is unanswered.
