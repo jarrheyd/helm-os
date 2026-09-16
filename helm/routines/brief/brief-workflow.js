@@ -37,6 +37,29 @@ const PROJECTS = C.projects || []
 const AREAS = C.areas || []
 const AREAS_TEXT = AREAS.length ? AREAS.map(a => (a.emoji||'•')+' '+a.name).join(' · ') : 'one stable emoji per area, learned from your config'
 const CARE_RANKING = C.careRanking || []
+const PROJECT_NAMES_TEXT = PROJECTS.map(p => p.label).concat(AREAS.map(a => a.name)).filter(Boolean).join(', ')
+
+// <chip-targets>
+// Every red AND every open owed action gets a chip, uncapped (2026-09-16: 10 owed items reached the owner as text
+// with no chip, because only reds were chipped and they were sliced to 5). dueSoon = due within 3 days, overdue, or
+// a due string we cannot parse (an unreadable date must never hide an item).
+function isDueSoon(due, nowIso) {
+  const now = new Date(String(nowIso).slice(0, 10) + 'T00:00:00Z')
+  const d = String(due || '').trim().toLowerCase()
+  if (!d || d === 'today' || d === 'tomorrow' || d === 'overdue') return true
+  let m = d.match(/(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) { const mm = d.match(/\b(\d{2})-(\d{2})\b/); if (mm) m = [null, String(now.getUTCFullYear()), mm[1], mm[2]] }
+  if (!m) return true
+  const days = (new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00Z`) - now) / 86400000
+  return days <= 3
+}
+function buildChipTargets(reds, openActions, nowIso) {
+  const fromReds = (reds || []).map(i => ({ kind: 'red', title: i.what || i.ask || i.who || 'red item', dueSoon: true, item: i }))
+  const fromOwed = (openActions || []).filter(a => !a.done).map(a => ({
+    kind: 'owed', title: a.action, due: a.due, dueSoon: isDueSoon(a.due, nowIso), item: a }))
+  return fromReds.concat(fromOwed)
+}
+// </chip-targets>
 const AUDIO_ARTIFACT_URL = (C.audio && C.audio.playerArtifactUrl) || ''
 const TRACKER_MODE = (C.writes && C.writes.tracker) === 'auto' ? 'auto' : 'draft'
 const TRACKER_RULE = TRACKER_MODE === 'auto'
@@ -222,7 +245,7 @@ const withRetry = (name, thunk) => async () => {
 const [email, chats, meetings, pm] = await parallel([
   withRetry('email', () => agent(`${COMMON}${GATE}
 MANDATORY CROSS-SURFACE RESOLUTION CHECK (2026-08-12, he flagged this: items he had already answered were reported as pending). NO red/yellow item is emitted until you have checked, for that item: (a) Gmail SENT - search_threads with in:sent scoped to the recipient/subject since the ask; (b) Google Chat (google-chat-ro) - he answers on a different surface than the one asked on, ML/TQA/PM spaces especially; (c) his authored Discord messages - server-wide search authorId ${DISCORD.authorId} on guild ${DISCORD.guildId}, limit 25, sortBy timestamp desc, PAGED with offset 25, 50, 75... until the oldest hit on a page predates the ask; one 25-hit page is never a check (2026-09-15: a single page only reached back to 4:22pm and the email stage reported the rest as unchecked); (d) Telegram/WhatsApp outbound. An item he answered ANYWHERE is a ⚪ cleared line, never a 🔴. State in the item that the check ran. This applies to his own promised deliverables too: a draft sitting unsent does NOT mean undelivered - he may have sent the same thing by chat.
-STAGE: EMAIL. Use the claude.ai Gmail connector (search_threads/get_thread/create_draft with replyToMessageId/unlabel UNREAD) - the npm gmail server ONLY for attachment downloads, never its send/delete/draft tools. Follow assistant.md "Email rules" exactly for mode ${mode}: fetch scope per mode. UNREAD SWEEP MUST BE EXHAUSTIVE (hardened 2026-08-16 - a run stated 201 unread and only paged ~78 threads): keep calling search_threads with the returned nextPageToken until no token remains, then RECONCILE threads-seen against unread_total. Short → keep paging; if the connector caps, split by date windows (is:unread before:/after:) and by label until every unread thread is accounted for. Reporting a total you did not actually page through is a failure - put the exact shortfall in failures[] rather than implying full coverage. Then: resolution check before any red/yellow, mark every white read IN THIS RUN, auto-draft templates, thread drafts, write ledger rows and vault deltas yourself. ANY doc/deck/PDF shared or @-tagged to him for review, or containing questions to him: OPEN it (Drive connector, or Chrome browser fallback on gdrive 403 - do not skip), produce the substantive review + draft answers to each question, land it in the project reviews/ folder + a chip. Capture his OWN sent-mail promises ('will send today', a committed date) as owner=${OWNER} ledger rows with resolved deadlines - verified first next run. Decision-shaped asks (a judgment call only ${OWNER} can make) go in the decisions field, not as red items. BEFORE emitting a decision, ls ${VAULT}/_decisions/ and grep the ledger for 'decision framed' - anything already framed is NOT emitted again (it is a white item at most).
+STAGE: EMAIL. Use the claude.ai Gmail connector (search_threads/get_thread/create_draft with replyToMessageId/unlabel UNREAD) - the npm gmail server ONLY for attachment downloads, never its send/delete/draft tools. Follow assistant.md "Email rules" exactly for mode ${mode}: fetch scope per mode. UNREAD SWEEP MUST BE EXHAUSTIVE (hardened 2026-08-16 - a run stated 201 unread and only paged ~78 threads): keep calling search_threads with the returned nextPageToken until no token remains, then RECONCILE threads-seen against unread_total. Short → keep paging; if the connector caps, split by date windows (is:unread before:/after:) and by label until every unread thread is accounted for. Reporting a total you did not actually page through is a failure - put the exact shortfall in failures[] rather than implying full coverage. Then: resolution check before any red/yellow, mark every white read IN THIS RUN, auto-draft templates, thread drafts, write ledger rows and vault deltas yourself. ANY doc/deck/PDF shared or @-tagged to him for review, or containing questions to him: OPEN it (Drive connector, or Chrome browser fallback on gdrive 403 - do not skip) only to read what is asked and by when. Write NO review and NO answers yourself (2026-09-16: the run writes no deliverables; the chip does that when he opens it). Emit it as a red item whose what names the doc, the ask and the deadline, with the doc link as its source, so SURFACE chips it. Capture his OWN sent-mail promises ('will send today', a committed date) as owner=${OWNER} ledger rows with resolved deadlines - verified first next run. Decision-shaped asks (a judgment call only ${OWNER} can make) go in the decisions field, not as red items. BEFORE emitting a decision, ls ${VAULT}/_decisions/ and grep the ledger for 'decision framed' - anything already framed is NOT emitted again (it is a white item at most).
 POPULATE read_summary EVERY run, and make each line SPECIFIC + DISAMBIGUATING (2026-08-12, he flagged generic FYI titles are useless: "which LeadCo proposal - we have 5 in discussion"): one line per FYI/email marked read, carrying the concrete detail that identifies THAT exact item - the specific entity/variant, the number/amount, the actual decision or status. "Mu: LeadCo GWS renewal proposal, 300 users, [amount if stated], FY[X] - no action" NOT "LeadCo proposal". "Google Cloud: collections notice on Acme Inc AND approval-overdue on the Beta V2 SOW specifically" NOT "GCP notice". Enough that he clears it without opening. Pure noise (OTP, promo blasts, newsletters) can be one line total ("+3 noise: KMC wellness, 2 OTP"). Do NOT leave empty when marked_read > 0.`,
     { label: 'sweep:email', phase: 'Sweep', schema: EMAIL_SCHEMA, effort: SWEEP_EFFORT })),
   withRetry('chats', () => agent(`${COMMON}${GATE}
@@ -257,7 +280,11 @@ const reds = allItems.filter(i => i.marker === 'red')
 const urgentReds = reds.filter(i => i.needs_him_within_hours)   // NOW lane
 const soon = reds.filter(i => !i.needs_him_within_hours).concat(allItems.filter(i => i.marker === 'yellow'))
 const later = allItems.filter(i => i.marker === 'white' && i.next)   // real but not time-pressured -> parked, not nagged
-const chipworthy = urgentReds.concat(reds.filter(i => !i.needs_him_within_hours)).slice(0, 5)  // reds get chips; the chip is the interface
+const chipworthy = urgentReds.concat(reds.filter(i => !i.needs_him_within_hours))  // reds, NOW-lane first, uncapped
+// Owed work is computed HERE, before SURFACE, so owed items can be chipped (it used to be computed after SURFACE).
+const openTags = chats ? (chats.direct_tags || []).filter(t => !t.answered) : []
+const openActions = meetings ? (meetings.open_actions || []).filter(a => !a.done) : []
+const chipTargets = buildChipTargets(chipworthy, openActions, now)
 const preps = meetings ? meetings.prep_blocks || [] : []
 
 phase('Work')
@@ -375,23 +402,35 @@ const logline = `${now} ${mode}: ${allItems.length} new · ${marked} FYIs read �
 // Runs when there's urgent work OR on MORNING/EVENING (to REPOPULATE the tray - chip task_ids die on app
 // restart, so 2026-08-11's 55 open rows show zero chips until re-spawned). Fix for "no chips are showing".
 const repopulate = mode === 'MORNING' || mode === 'EVENING'
-if (chipworthy.length || repopulate) {
-  await agent(`${COMMON}${GATE}
-STAGE: SURFACE. ${repopulate ? `REPOPULATE-AND-SURFACE run (${mode}). ` : ''}Urgent red items this run (max 5, NOW-lane first): ${JSON.stringify(chipworthy)} - the chip is what he actually reads, so it must be self-sufficient. Push-notify ONLY the NOW-lane count.
-${repopulate ? `R. REPOPULATE THE TRAY FIRST (chip ids do not survive app restart, so open work shows no chip until re-spawned): read ${VAULT}/_meta/surfaced.md, and for EVERY row still "open" whose underlying item is NOT resolved (resolution-check each against the ledger + _decisions/ first, strike the dead ones), spawn_task a fresh chip and update that row's task_id + chipped date. This is idempotent housekeeping - the goal is the tray matches the open ledger, capped at ~15 most-urgent so it is not a wall. Dedup: one chip per distinct item, never two for the same thread.
+let surfaced = null
+if (chipTargets.length || repopulate) {
+  surfaced = await agent(`${COMMON}${GATE}
+STAGE: SURFACE. ${repopulate ? `REPOPULATE-AND-SURFACE run (${mode}). ` : ''}Chip targets this run, NO CAP (2026-09-16: every red AND every open owed action gets a chip; reds first, then owed with dueSoon first): ${JSON.stringify(chipTargets)}. ALSO add as owed targets every open row in ${VAULT}/_meta/followups.md whose owner column names ${OWNER} first and whose status is open (his own promises). Rows where ${OWNER} is only cc'd or one of several trailing names are NOT his. The chip is what he actually reads, so it must be self-sufficient. Push-notify ONLY the NOW-lane count.
+THIS RUN WRITES NO DELIVERABLES. You spawn chips and route; the chip writes the artifact when he opens it.
+S. LIVE-SESSION CHECK, BEFORE ANY SPAWN (2026-09-16, he does not want re-pings for work he already has a session on). Call mcp__ccd_session_mgmt__list_sessions (include_archived false, limit 50). EVERY non-archived session is active, whatever its title or emoji. For each chip target, work out its project: a name from config (${PROJECT_NAMES_TEXT || 'the configured projects and areas'}) when the item belongs to one, otherwise the client or project named in the item or its ledger row (a sales effort not in config still has a client name). Compare against session titles case-insensitive with emoji stripped. Match at PROJECT level: any active session on that project routes the item there - do NOT spawn a chip for it. Several sessions match: pick the one whose title names the most specific project (a client name beats the product it runs on), then the most recently active. Record a ${VAULT}/_meta/surfaced.md row "status: in-session <sessionId>" and return it in routed[] {item, sessionId, sessionTitle}. Only targets with no matching session get a chip. If list_sessions is unavailable, say so in reason and chip every target (a missed dedup beats a missed item).
+${repopulate ? `R. REPOPULATE THE TRAY FIRST (chip ids do not survive app restart, so open work shows no chip until re-spawned): read ${VAULT}/_meta/surfaced.md, and for EVERY row still "open" whose underlying item is NOT resolved (resolution-check each against the ledger + _decisions/ first, strike the dead ones), spawn_task a fresh chip and update that row's task_id + chipped date. This is idempotent housekeeping - the goal is the tray matches the open ledger. Run step S on every row first: a row whose project has an active session is routed, not respawned. No cap on rows due within 3 days; only stale carry-overs are capped (R3). Dedup: one chip per distinct item, never two for the same thread.
 R2. FRAMED-DECISION SUPPRESSION (2026-08-13, he flagged repeat chips for things already discussed): before respawning ANY row, ls ${VAULT}/_decisions/ and grep it for the row's subject. A row whose decision is already framed in a file gets NO chip - it belongs in the brief's ⚖️ DECISIONS list, which he answers by replying. Same for rows that are a yes/no, an ack, or a "reply done". Strike them from the repopulate set, do not spawn. The tray is working sessions only.
-R3. CARRY-OVER CAP: a row already chipped in a PREVIOUS run and unchanged since (same ask, same deadline, no new message on the thread) is a carry-over. Respawn at most 5 carry-overs, nearest-deadline first, and mark the row "carried <date>". Everything else stays open in surfaced.md with no chip. New items this run always outrank carry-overs for tray slots.
+R3. CARRY-OVER CAP: a row already chipped in a PREVIOUS run and unchanged since (same ask, same deadline, no new message on the thread) is a carry-over. A carry-over due within 3 days is never capped. Other carry-overs: respawn at most 5, nearest-deadline first, and mark the row "carried <date>". Everything else stays open in surfaced.md with no chip. New items this run always outrank carry-overs for tray slots.
 ` : ''}0. CONSOLIDATE FIRST: review open chips against the ledger + resolution check. Dismiss (mcp__ccd_session__dismiss_task) any whose item is resolved, duplicated, or is just a "reply done"/decision that belongs in the triage not a chip. The chip tray holds ONLY live work-sessions.
-1. If an item ALREADY has a live chip/session (per surfaced.md), CONTINUE it - update that session, don't spawn a second worktree for the same thread. A chip is spawned ONLY for a NEW item that needs a real working session (produce a deliverable, investigate with tools). A decision or a yes/no or a "reply done" is NOT chipped - it goes in the brief's decision list for him to answer by replying in the triage. Read ${VAULT}/_meta/surfaced.md; skip anything already surfaced (update the same chip if its deadline crossed <48h). Append a row on new chips.
-2. spawn_task per item: imperative title with the deadline ("Reply to Gee on Nu deploy - by 6pm"); prompt fully self-contained (ask verbatim, who is waiting, since when, vault paths, what done looks like, your recommended action first). The prompt MUST begin with this standing preamble, verbatim:
+1. If an item ALREADY has a live chip (per surfaced.md) or an active session (step S), do not spawn a second one. You cannot message a session from this run (send_message is blocked in scheduled runs), so a routed item is only recorded and flagged in the brief. A chip is spawned ONLY for an item that needs a real working session (produce a deliverable, investigate with tools). A decision or a yes/no or a "reply done" is NOT chipped - it goes in the brief's decision list for him to answer by replying in the triage. Read ${VAULT}/_meta/surfaced.md; skip anything already surfaced (update the same chip if its deadline crossed <48h). Append a row on new chips.
+2. spawn_task per item: imperative title with the deadline ("Client pricing sheet by Fri 09-18"); prompt fully self-contained (ask verbatim, who is waiting, since when, vault paths, what done looks like). After the preamble, the prompt body MUST carry these three steps in this order:
+   HUNT: search Gmail, Google Chat, Drive and the meeting records for this item. List what you found, each with its source.
+   GRILL: list EVERY gap (a missing fact, a number, a scope edge, a choice only he can make). Ask them one at a time, each with your recommended answer. Write nothing while any gap is open.
+   WRITE: once no gap is open, produce the deliverable, save it in the project folder, run the deslop gate, then show it.
+   The run itself gathers nothing and drafts nothing for the chip. The prompt MUST begin with this standing preamble, verbatim:
 the STANDING PREAMBLE from ${VAULT}/_meta/chip-preamble.md verbatim, with [CREATED_TIME]=${now} and [SOURCE] filled in with THIS item's actual origin channel + identifier (e.g. "Gmail thread <id>", "Telegram chat <name>", "Discord #<channel>", "meeting record <file>") so the opener knows exactly what to re-pull. The preamble makes the chip RE-SCAN live sources on open, not present stale capture-time context.
 Stamp the tldr with created-time ("as of 2pm").
 3. Then ONE PushNotification, under 200 chars, no markdown, leading with the nearest deadline: e.g. "Brief: Nu deploy call by 6pm + 2 more - chips in app". Skip it entirely if nothing is due before the next brief.
 NO failure/infra content anywhere in this stage - that lives in the receipt.`,
     { label: 'surface', phase: 'Compose', effort: 'medium',
-      schema: { type: 'object', required: ['chips_created', 'push_sent'], properties: {
-        chips_created: { type: 'number' }, push_sent: { type: 'boolean' }, reason: { type: 'string' } } } })
+      schema: { type: 'object', required: ['chips_created', 'push_sent', 'routed'], properties: {
+        chips_created: { type: 'number' }, push_sent: { type: 'boolean' }, reason: { type: 'string' },
+        chipped: { type: 'array', items: { type: 'string' } },
+        routed: { type: 'array', items: { type: 'object', required: ['item', 'sessionId', 'sessionTitle'],
+          properties: { item: { type: 'string' }, sessionId: { type: 'string' }, sessionTitle: { type: 'string' } } } } } } })
 }
+const routed = surfaced ? (surfaced.routed || []) : []
+const chipped = surfaced ? (surfaced.chipped || []) : []
 
 // Append telemetry to the runlog every run (for the Friday optimizer). Bash via a stage agent so it works headless.
 // ALSO: refresh brain.md's "Last briefed" date-stamp and clear the in-flight lock (2026-08-18) - the marker had
@@ -403,9 +442,7 @@ await agent(`Three quick file ops, in order:
   { label: 'runlog', phase: 'Compose', effort: 'low' })
 const readSummary = email ? (email.read_summary || []) : []
 const channelDigests = chats ? (chats.channel_digests || []) : []
-const openTags = chats ? (chats.direct_tags || []).filter(t => !t.answered) : []
 const dealWatch = chats ? (chats.deal_watch || []) : []
-const openActions = meetings ? (meetings.open_actions || []).filter(a => !a.done) : []
 const pmDigest = pm ? (pm.digest || '') : ''
 const pmChanges = pm ? (pm.ticket_changes || []) : []
 const movedAnything = allItems.length || readSummary.length || channelDigests.length || pmChanges.length || preps.length || openTags.length || openActions.length
@@ -438,7 +475,7 @@ RENDER IN THIS ORDER, and ONLY these:
 2b. CARRY-OVER DEMOTION (2026-08-13, he flagged items repeating brief after brief): before rendering, read ${VAULT}/_meta/surfaced.md and the last brief's entries. An item that appeared in a previous 🎯 NEEDS YOU and has NOT changed since (no new message, same ask, same deadline) does NOT get a full line again. Full lines are for items NEW this run or materially changed - say what changed ("4th follow-up now", "deadline moved to Thu"). All unchanged carry-overs collapse into ONE tail line: "↔️ still open, unchanged: <item>, <item>, <item> - reply 'done <item>' to strike." Never re-explain a carry-over's background. A NEEDS YOU section that is mostly carry-overs means the system is nagging, not surfacing.
 2c. REPEAT CAP (2026-08-14). Count how many consecutive runs each item has appeared in, from ${VAULT}/_meta/surfaced.md. An item that has been 🔴 for THREE consecutive runs with no movement can never be 🔴 again. On that third run it gets one line, once: "<item> - red 3 runs, no movement. Still live, or is it dead?" After that it drops out of NEEDS YOU entirely and lives in the ledger tail only. Rationale: the Zeta portal/SSO outage ran red three days while he had already answered it each day. An item repeating unchanged is a system failure to progress it, not news - if it genuinely still needs him, progress it into a chip or a decision file instead of restating it.
 2d. **🏷️ TAGGED** (2026-09-14, he found 41 Discord tags in a day and was prompted on ~6): every entry in open_tags as its own line, newest first, "who, #channel time: the ask". NO cap, never merged into areas, never counted in place of lines; the 3-bullet and max-6 caps elsewhere do not apply here. A tag already rendered as a NEEDS YOU line is not repeated. Omit only when open_tags is empty.
-2e. **📝 YOU OWE** (2026-09-14, 15 meeting actions reached him as zero prompts): every entry in open_actions as its own line, due today first, "action, meeting, due". NO cap. Items already in NEEDS YOU are not repeated. Omit only when empty.
+2e. **📝 YOU OWE** (2026-09-14, 15 meeting actions reached him as zero prompts): every entry in open_actions as its own line, due today first, "action, meeting, due". NO cap. Items already in NEEDS YOU are not repeated. Omit only when empty. WHERE IT WENT (2026-09-16): an item in chipped ends "-> chip". An item in routed ends "-> in [<sessionTitle>](#<sessionId>)" so one click opens that session. Several routed items on one session collapse to ONE line: "<N> new <project> items -> in [<sessionTitle>](#<sessionId>)". This link syntax is the only markdown link allowed in the brief.
 2f. **💼 DEALS** (2026-09-14): from deal_watch, one line per deal named in the watched posts. Add what this run's sweeps know about that deal in <=10 words (proposal sent, review asked, silent) only when something is known. If unchanged_since is set, say once under the header "list unchanged since <date>, HubSpot not updated". Omit when deal_watch is empty.
 3. **⚖️ DECISIONS - render ALL open ones, read the folder (2026-08-17, he flagged 76 framed decisions invisible because they only surfaced via chips and spawn was down).** ACTUALLY \`ls ${VAULT}/_decisions/\` and render EVERY open decision file, not just the ones framed this run - oldest first, one line each: question · your recommendation · age. This section is NOT chip-dependent; a decision is answered by replying in the triage. NEVER spawn_task here (2026-08-13: chipping decisions produced duplicate chips). If the folder holds more than ~10 open, that backlog is itself the headline - say "N decisions waiting, oldest since <date>" and list the 10 most time-pressured, with a pointer to the rest. Silent decisions he cannot see is the exact failure the governing rule forbids.
 4. **🗂️ BY AREA - what moved.** One block per project. FORMAT IS STRICT (2026-08-12, he flagged dense paragraph walls - "barely readable"): area emoji + bold name on its own line, then AT MOST 3 short bullets under it, and FEWER WHENEVER THERE IS LESS (a ceiling, not a quota - one real fact means one bullet, and a padded third is a hard-rule violation). HARD RULES: one fact per bullet · each bullet <= ~14 words · NO run-on lines cramming multiple facts with semicolons · NO paragraphs. HEADLINE ALTITUDE, not ticket-level: "QA mostly passed, one map-pin bug open" NOT "HH-55/59/71 pass, HH-74 fails (lat/long not driving the pin...)". Ticket numbers and QA minutiae live in the tracker/chip, never the brief. If an area genuinely needs more than 3 bullets, the overflow is either a NEEDS YOU item or a chip - link it ("→ decision file", "→ chip"), do not dump. Lead bullet = the single most important thing in that area. Skip areas with nothing.
@@ -456,6 +493,8 @@ pm_changes=${JSON.stringify(pmChanges.slice(0, 20))} pm_digest=${JSON.stringify(
 cleared_fyis=${JSON.stringify(readSummary)}
 open_tags=${JSON.stringify(openTags)}
 open_actions=${JSON.stringify(openActions)}
+chipped=${JSON.stringify(chipped)}
+routed=${JSON.stringify(routed)}
 deal_watch=${JSON.stringify(dealWatch)}
 meeting_summaries=${JSON.stringify(meetings ? (meetings.summaries || []).slice(0, 15) : [])}
 decisions=${JSON.stringify(files)} preps=${JSON.stringify(preps)} failures=${JSON.stringify(failures.slice(0, 8))}
