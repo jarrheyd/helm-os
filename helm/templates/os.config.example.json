@@ -3,7 +3,9 @@
     "name": "Alex Rivera",
     "role": "Head of Delivery",
     "timezone": "America/New_York",
-    "briefAddressee": "Alex"
+    "briefAddressee": "Alex",
+    "org": "Northwind",
+    "teamDomain": "northwind.example"
   },
   "schedule": {
     "slots": {
@@ -58,8 +60,18 @@
         "projectKeys": [
           "OPS"
         ]
+      },
+      {
+        "connector": "wrike",
+        "projectKeys": [
+          "CLIENT-X"
+        ],
+        "readVia": "browser",
+        "browserUrl": "https://www.wrike.com/workspace.htm?acc=0000000#path=inbox",
+        "note": "the Wrike MCP is signed in to a different account"
       }
-    ]
+    ],
+    "projectAliasPattern": "<project>@northwind.example"
   },
   "identityIds": {
     "discord": {
@@ -85,11 +97,11 @@
   "areas": [
     {
       "name": "Project X",
-      "emoji": "\ud83d\ude80"
+      "emoji": "🚀"
     },
     {
       "name": "Sales",
-      "emoji": "\ud83d\udcc8"
+      "emoji": "📈"
     }
   ],
   "careRanking": [

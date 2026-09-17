@@ -34,6 +34,14 @@
         "briefAddressee": {
           "type": "string",
           "description": "Who the brief is written to (usually the principal)."
+        },
+        "org": {
+          "type": "string",
+          "description": "The team or company name the brief uses when a client is waiting on the team."
+        },
+        "teamDomain": {
+          "type": "string",
+          "description": "The team's email domain, e.g. example.com. A reply from this domain clears a client ball."
         }
       }
     },
@@ -152,9 +160,29 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "readVia": {
+                "type": "string",
+                "enum": [
+                  "mcp",
+                  "browser"
+                ],
+                "description": "browser when the MCP cannot see this board (wrong account, no connector)."
+              },
+              "browserUrl": {
+                "type": "string",
+                "description": "The board's inbox/notifications URL, read in the logged-in browser when readVia is browser."
+              },
+              "note": {
+                "type": "string",
+                "description": "Why this board reads the way it does, shown to the sweep."
               }
             }
           }
+        },
+        "projectAliasPattern": {
+          "type": "string",
+          "description": "Shared per-project mailbox pattern, e.g. <project>@example.com. Mail there counts as client venue."
         }
       }
     },

@@ -22,7 +22,7 @@ const DENY = [
   // clients / missions
   'mWell', 'HealthHub', 'HealthID', 'Health ID', 'HealthPal', 'Kapwa',
   'OceanJet', 'Penbrothers', 'Gussy', 'GiyaPay', 'BIMS', 'Coaxis',
-  'USPAACC', 'Metro Retail', 'GoRocky', 'Josys', 'Brex', 'Meralco', 'Starlabs', 'Star Lab',
+  'USPAACC', 'Shophouse', 'Metro Retail', 'GoRocky', 'Josys', 'Brex', 'Meralco', 'Starlabs', 'Star Lab',
   // real ids
   'dac5bc43-44cf-406d-b330', '688651268146855958', '688634391660068872',
   '8c115b6e-1952-4a43-8616', 'heypocketai.com',

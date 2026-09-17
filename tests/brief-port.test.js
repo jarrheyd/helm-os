@@ -94,3 +94,32 @@ test('the run never writes doc reviews itself', () => {
   const s = fs.readFileSync(BRIEF, 'utf8');
   assert.doesNotMatch(s, /land it in the project reviews\//);
 });
+
+test('ball-on-us flows from both sweeps into the brief', () => {
+  const s = fs.readFileSync(BRIEF, 'utf8');
+  assert.match(s, /const BALL = /, 'ball schema');
+  assert.strictEqual((s.match(/ball_on_us: \{ type: 'array', items: BALL \}/g) || []).length, 2, 'email + chats both return balls');
+  assert.match(s, /BALL-ON-US DETECTION/);
+  assert.match(s, /BALL-ON-US in client chats/);
+  assert.match(s, /his_balls=\$\{JSON\.stringify\(hisBalls/);
+  assert.match(s, /BALL-ON-US LEAD/);
+});
+
+test('review tags always become chips', () => {
+  assert.match(fs.readFileSync(BRIEF, 'utf8'), /REVIEW TAGS \(2026-09-17\)/);
+  assert.match(fs.readFileSync(path.join(ROOT, 'helm/templates/vault/_meta/chip-preamble.md'), 'utf8'), /REVIEW ASKS/);
+  assert.ok(fs.existsSync(path.join(ROOT, 'helm/templates/vault/_meta/stances.md')));
+});
+
+test('browser-read boards come from config, not hardcoded', () => {
+  const s = fs.readFileSync(BRIEF, 'utf8');
+  const m = s.match(/const BROWSER_BOARDS = [^\n]+\nconst BROWSER_BOARDS_TEXT = [^\n]+/);
+  assert.ok(m, 'derives browser boards');
+  const OWNER = 'Alex';
+  const text = (BOARDS) => new Function('BOARDS', 'OWNER', `${m[0]}; return BROWSER_BOARDS_TEXT`)(BOARDS, OWNER);
+  assert.strictEqual(text([{ connector: 'jira', projectKeys: ['OPS'] }]), '');
+  const t = text([{ connector: 'wrike', projectKeys: ['X'], readVia: 'browser', browserUrl: 'https://w.example/inbox', note: 'other account' }]);
+  assert.match(t, /WRIKE \(X\) READS THROUGH THE BROWSER/);
+  assert.match(t, /https:\/\/w\.example\/inbox/);
+  assert.match(t, /tab id/);
+});
