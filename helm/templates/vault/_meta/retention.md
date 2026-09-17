@@ -6,7 +6,7 @@ Every recurring-write file has a size or age cap so nothing grows forever. A wee
 - Live window is roughly 14 days. Older content rotates to `_archive/` (moved, still greppable), it does not stay in the hot file.
 - Move, do not delete, except genuine throwaways. Anything substantive is moved, reversible.
 - State files are rewritten to current, never grown by appending dated blocks.
-- Reference files (people, profile, glossaries, templates) are exempt from age. Old is correct for these.
+- Reference files (people, profile, glossaries, templates, `_meta/stances.md`) are exempt from age. Old is correct for these.
 - Cap the view, keep the record. Meeting notes and archives are durable, surfaced through an index, not loaded wholesale.
 
 ## Per-file contracts
