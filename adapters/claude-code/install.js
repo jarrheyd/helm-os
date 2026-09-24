@@ -77,8 +77,9 @@ function scaffoldTasks(cfg) {
 function main() {
   const remove = process.argv.includes('--remove');
   const hookResult = wireHooks(remove);
-  if (remove) { console.log('claude-code adapter: hooks removed.'); return; }
   const cfg = loadConfig();
+  const usage = scheduleUsage(cfg, remove);
+  if (remove) { console.log('claude-code adapter: hooks removed.' + (usage ? ' usage schedule removed.' : '')); return; }
   const tasks = scaffoldTasks(cfg);
   console.log(`claude-code adapter: write-ledger hooks ${hookResult} in ${settingsPath()}.`);
   if (tasks.length) {
@@ -87,6 +88,14 @@ function main() {
   } else {
     console.log('no config found (set HELM_VAULT or HELM_CONFIG) - skipped scheduled runs.');
   }
+  if (usage && usage.plists) console.log(`usage: nightly rollup scheduled (launchctl bootstrap gui/$(id -u) ${usage.plists.map((f) => `"${f}"`).join(' ')})`);
+  if (usage && usage.cron) console.log('usage: add to crontab:\n  ' + usage.cron.join('\n  '));
+}
+
+/** The usage routine runs as plain node on launchd, not as a scheduled agent session: no tokens spent to start it. */
+function scheduleUsage(cfg, remove) {
+  if (!cfg || !cfg.paths || (cfg.usage && cfg.usage.enabled === false)) return null;
+  return require(path.join(REPO, 'helm', 'routines', 'usage', 'schedule.js')).install(cfg.paths.vaultRoot, remove);
 }
 
 if (require.main === module) main();

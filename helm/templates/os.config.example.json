@@ -97,11 +97,11 @@
   "areas": [
     {
       "name": "Project X",
-      "emoji": "🚀"
+      "emoji": "\ud83d\ude80"
     },
     {
       "name": "Sales",
-      "emoji": "📈"
+      "emoji": "\ud83d\udcc8"
     }
   ],
   "careRanking": [
@@ -118,5 +118,15 @@
     "enabled": false,
     "voice": "Charon",
     "playerArtifactUrl": ""
+  },
+  "usage": {
+    "enabled": true,
+    "model": true,
+    "osPrefixes": [],
+    "particles": [],
+    "languages": {},
+    "projectPaths": {},
+    "projectAliases": {},
+    "aliases": {}
   }
 }

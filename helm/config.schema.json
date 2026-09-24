@@ -322,6 +322,101 @@
           "description": "draft (default): the OS drafts proposed ticket comments/creates into the project's drafts/ for you to apply. auto: it writes them directly in your voice, gated by the write-ledger."
         }
       }
+    },
+    "usage": {
+      "type": "object",
+      "description": "Usage routine: how you work with AI, read from your Claude Code and Codex transcripts. Numbers go to _usage/, anything built from your words stays in _usage/local.nosync/.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Schedule the nightly rollup. Default true."
+        },
+        "model": {
+          "type": "boolean",
+          "description": "Allow the small model calls (one-time labeling, nightly 3-line read). false = zero tokens, numbers only."
+        },
+        "osPrefixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Opening words of prompts your automation writes, so they count as the OS and not you."
+        },
+        "ownerName": {
+          "type": "string",
+          "description": "Your name as your automation writes it. Defaults to identity.name."
+        },
+        "particles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Filler words or particles to count, e.g. from a second language."
+        },
+        "languages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Language name -> word list, for the share of each language in your messages."
+        },
+        "projectPaths": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Folder prefix -> project label."
+        },
+        "projectAliases": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Project label -> names you type for it."
+        },
+        "hubPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Folders where you work on many projects; sessions there take the project their messages name. The vault is always one."
+        },
+        "aliases": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Person name -> other names for them, on top of the people file."
+        },
+        "peopleFile": {
+          "type": "string",
+          "description": "People file, relative to the vault. Default People/people.md."
+        },
+        "prices": {
+          "type": "object",
+          "description": "Model id prefix -> { in, out, cacheRead?, cacheWrite? } in USD per million tokens, for models without a built-in price."
+        },
+        "codexModel": {
+          "type": "string",
+          "description": "Model for Codex labeling calls, when your default needs a newer CLI."
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number",
+          "description": "Local dashboard port. Default 4747."
+        }
+      }
     }
   }
 }

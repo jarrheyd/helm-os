@@ -20,6 +20,9 @@ Every recurring-write file has a size or age cap so nothing grows forever. A wee
 | `_decisions/*.md` | open decisions | open only | settled decisions to `_decisions/closed/` |
 | `_today.md` | daily log | today only | morning roll to `_archive/` |
 | `brain.md` | thin index | thin | never re-grow tables here |
+| `_usage/events/*.jsonl` | usage log | last 12 months | older month files to `_archive/usage/` |
+| `_usage/days/*.md`, `_usage/weeks/*.md` | usage records | durable | keep; a few KB each |
+| `_usage/local.nosync/**` | local only | rebuildable | never synced; `ingest.js --rebuild` recreates it, except `labels.jsonl` and `tone-model.json`, which cost tokens to redo |
 
 ## Enforcement
 - Weekly: walk this table, rotate every over-cap file, verify state files were rewritten, close settled decisions.

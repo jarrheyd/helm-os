@@ -41,6 +41,7 @@ function vaultPaths(vaultRoot) {
     people: p('People', 'people.md'),
     profile: p('Personal', 'profile.md'),
     audio: p('_audio'),
+    usage: p('_usage'),
   };
 }
 
