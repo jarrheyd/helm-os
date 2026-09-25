@@ -47,6 +47,7 @@ function loadUsageConfig() {
     aliases: u.aliases || {},
     projectPaths: u.projectPaths || {},
     projectAliases: u.projectAliases || {},
+    dayToDay: u.dayToDay || [],
     hubPaths: (u.hubPaths || []).concat(vault ? [vault] : []),
     prices: u.prices || {},
     model: u.model !== false,

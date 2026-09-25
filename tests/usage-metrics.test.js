@@ -74,8 +74,13 @@ test('metrics: streaks, hub projects, context diffs, OS split', () => {
   assert.strictEqual(m.you.prompts, 90, 'OS prompts are not yours');
   assert.strictEqual(m.you.streak.longest, 3);
   const names = m.projects.map((p) => p.name).sort();
-  assert.deepStrictEqual(names, ['(no single project)', 'Beta App', 'acme']);
+  assert.deepStrictEqual(names, ['Beta App', 'Day to day', 'acme']);
+  assert.strictEqual(m.projects[m.projects.length - 1].name, 'Day to day', 'day to day sits last');
+  assert.ok(!m.contexts.combined.some((x) => x.name === 'Day to day'), 'running your day is not compared like a project');
   assert.ok(m.contexts.diffs.some((d) => d.name === 'acme' && d.metric === 'correction' && d.lift > 1.6), 'acme pushes back more than baseline');
+  const acme = m.contexts.combined.filter((x) => x.name === 'acme');
+  assert.strictEqual(acme.length, 1, 'one line per context');
+  assert.match(acme[0].text, /^On acme, you push back more \(50% vs \d+%\)/);
   assert.strictEqual(m.machine.layers.os.cost, 1);
   assert.strictEqual(m.machine.layers.os.calls, 3);
   assert.deepStrictEqual(m.machine.tools.you, [['Read', 4]]);

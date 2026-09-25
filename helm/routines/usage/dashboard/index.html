@@ -86,7 +86,8 @@ FORM: computation pad, grounded list position 3, staging: sheets separated by pe
   .finds li { display: grid; grid-template-columns: 1fr 180px; gap: 16px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--grid-major); }
   .finds li:first-child { border-top: 1px solid var(--grid-major); }
   .finds .t { font-size: 15px; }
-  .finds svg { width: 180px; height: 28px; display: block; }
+  .finds svg { width: 180px; height: 24px; display: block; }
+  .gauges { display: flex; flex-direction: column; }
   .group-label { font-size: 13px; color: var(--ink-soft); margin: 16px 0 8px; font-weight: 600; }
   .group-label:first-child { margin-top: 0; }
 
@@ -96,6 +97,8 @@ FORM: computation pad, grounded list position 3, staging: sheets separated by pe
   table.ruled th { text-align: left; font-weight: 600; font-size: 12px; color: var(--ink-soft); padding: 4px 8px 6px 0; border-bottom: 1.5px solid var(--ink); }
   table.ruled td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--grid-major); vertical-align: middle; }
   table.ruled td.num, table.ruled th.num { text-align: right; }
+  table.ruled tr.day td { color: var(--ink-soft); border-top: 1.5px solid var(--ink); }
+  table.ruled tr.day .bar { background: var(--ink-faint); }
   .bar { height: 10px; background: var(--ink); display: block; min-width: 1px; }
   .bar.os { background: var(--blue); }
   svg text { fill: var(--ink-soft); }
@@ -121,6 +124,7 @@ FORM: computation pad, grounded list position 3, staging: sheets separated by pe
     .finds li { grid-template-columns: 1fr; gap: 4px; }
     .two { grid-template-columns: minmax(0, 1fr); }
     .hide-sm { display: none; }
+    .gauges { display: none; } /* the sentence already carries both numbers */
     .sheet + .sheet::before { left: 0; right: 0; }
   }
 </style>
@@ -192,14 +196,15 @@ FORM: computation pad, grounded list position 3, staging: sheets separated by pe
     const base = m.words.base;
     const w = m.thisWeek;
     const week = w && w.moved.length ? w.moved.slice(0, 3).map((x) => `<p class="note week">${esc(x.text)}</p>`).join('') : '';
-    const margin = `${week}<p class="note">Each line compares one project or person with <b>how you usually write</b>. The tick is your usual; the dot is that context, filled when higher, hollow when lower.</p>
+    const margin = `${week}<p class="note">Each line compares one project or person with <b>how you usually write</b>. The tick is your usual; each dot is one difference, in the order the sentence lists them, filled when higher and hollow when lower.</p>
       <p class="note">Usually you write <b>${base.medianWords} words</b>, push back on <b>${pct(base.correction)}</b> and ask a question in <b>${pct(base.question)}</b> of messages.<span class="n">from ${num(base.n)} messages</span></p>`;
+    const combined = m.contexts.combined || [];
     const list = groups.map(([k, label]) => {
-      const rows = d.filter((x) => x.kind === k).slice(0, 8);
+      const rows = combined.filter((x) => x.kind === k).slice(0, 8);
       if (!rows.length) return '';
       return `<p class="group-label">${label}</p><ul class="finds">${rows.map((x) => {
         const text = esc(x.text).replace(esc(x.name), masked(x.name, k === 'person'));
-        return `<li><span class="t">${text}</span>${gauge(x.value, x.base, x.metric)}</li>`;
+        return `<li><span class="t">${text}</span><span class="gauges">${x.items.map((i) => gauge(i.value, i.base, i.metric)).join('')}</span></li>`;
       }).join('')}</ul>`;
     }).join('');
     return sheet('This week, and where you differ', margin, list);
@@ -267,17 +272,21 @@ FORM: computation pad, grounded list position 3, staging: sheets separated by pe
   }
 
   function projects(m) {
-    const p = m.projects.filter((x) => x.prompts >= 3).slice(0, 14);
+    const real = m.projects.filter((x) => x.prompts >= 3 && !x.day).slice(0, 13);
+    const day = m.projects.find((x) => x.day);
+    const p = day ? real.concat(day) : real;
     if (!p.length) return '';
     const total = m.projects.reduce((a, x) => a + x.minutes, 0) || 1;
-    const max = p[0].minutes || 1;
-    const top = p[0];
-    const top3 = p.slice(0, 3).reduce((a, x) => a + x.minutes, 0) / total;
+    const projTotal = real.reduce((a, x) => a + x.minutes, 0) || 1;
+    const max = Math.max(...p.map((x) => x.minutes), 1);
+    const top = real[0] || p[0];
+    const top3 = real.slice(0, 3).reduce((a, x) => a + x.minutes, 0) / projTotal;
     const margin = `
-      <p class="note"><b>${esc(top.name)}</b> took <b>${pct(top.minutes / total)}</b> of your time, about ${hrs(top.minutes)}.</p>
-      <p class="note">Your top three projects cover <b>${pct(top3)}</b> of all your hours.</p>
-      <p class="note quiet">Sessions opened from a general folder go to the project their messages name most. Ones that name none sit under "no single project".</p>`;
-    const rows = p.map((x) => `<tr>
+      <p class="note"><b>${esc(top.name)}</b> took <b>${pct(top.minutes / projTotal)}</b> of your project time, about ${hrs(top.minutes)}.</p>
+      <p class="note">Your top three projects cover <b>${pct(top3)}</b> of it.</p>
+      ${day ? `<p class="note">Running your day took another <b>${hrs(day.minutes)}</b>, ${pct(day.minutes / total)} of all your hours.</p>` : ''}
+      <p class="note quiet">Day to day is your OS itself plus sessions from a general folder that name no project.</p>`;
+    const rows = p.map((x) => `<tr${x.day ? ' class="day"' : ''}>
       <td>${esc(x.name)}</td>
       <td style="width:38%"><span class="bar" style="width:${(x.minutes / max) * 100}%"></span></td>
       <td class="num fig">${hrs(x.minutes)}</td><td class="num fig">${num(x.prompts)}</td>

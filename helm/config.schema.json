@@ -415,6 +415,13 @@
         "port": {
           "type": "number",
           "description": "Local dashboard port. Default 4747."
+        },
+        "dayToDay": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Project labels that are how you run your day, not projects (your OS, admin). They fold into one Day to day row, left out of project rankings and comparisons."
         }
       }
     }

@@ -121,7 +121,7 @@ function rollup(opts = {}) {
     if (wk !== thisWeek && fs.existsSync(file)) continue;
     const evs = events.filter((e) => isoWeek(dayOf.get(e.id)) === wk);
     const m = compute(evs, local, c);
-    const diffs = m.contexts.diffs.filter((d) => d.kind === 'project').slice(0, 6); // people stay local
+    const diffs = m.contexts.combined.filter((d) => d.kind === 'project').slice(0, 6); // people stay local
     fs.writeFileSync(file, frontmatter({ week: wk, messages: m.you.prompts, words: m.you.words, activeDays: m.you.activeDays, valence: m.words.base.valence ?? null })
       + `\n# ${wk}\n\n` + numbers(m).map((l) => `- ${l}`).join('\n') + '\n'
       + (diffs.length ? '\n## Where you differed\n\n' + diffs.map((d) => `- ${d.text}`).join('\n') + '\n' : ''));
@@ -141,7 +141,7 @@ function rollup(opts = {}) {
       `last 4 weeks: ${numbers(recent).join('; ')}`,
       ...Object.entries(tp).map(([k, p]) => `${k}: ${p.n} messages, typical ${p.medianWords} words, push back ${pct(p.correction)}, questions ${pct(p.question)}${p.valence != null ? `, mood ${p.valence}` : ''}`),
       `phrases you use most: ${m.words.bigrams.slice(0, 12).map((b) => b[0]).join(', ')}`,
-      ...m.contexts.diffs.filter((d) => d.kind === 'project').slice(0, 8).map((d) => d.text),
+      ...m.contexts.combined.filter((d) => d.kind === 'project').slice(0, 8).map((d) => d.text),
     ];
     let read = '';
     if (useModel) {

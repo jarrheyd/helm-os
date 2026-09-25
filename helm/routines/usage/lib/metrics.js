@@ -109,6 +109,47 @@ const METRIC_TEXT = {
   pos: ['sound upbeat', 'more', 'less', (v) => `${Math.round(v * 100)}%`],
 };
 
+// Short verb phrases for one combined sentence per context.
+const PHRASE = {
+  medianWords: ['write longer', 'write shorter'],
+  correction: ['push back more', 'push back less'],
+  question: ['ask more questions', 'ask fewer questions'],
+  laugh: ['laugh more', 'laugh less'],
+  late: ['work late more often', 'work late less often'],
+  shout: ['use caps more', 'use caps less'],
+  neg: ['sound tense more often', 'sound tense less often'],
+  pos: ['sound upbeat more often', 'sound upbeat less often'],
+};
+
+/**
+ * One sentence per project or person, joining its strongest differences:
+ * "When Dana comes up, you write longer (81 words vs 13) and ask more questions (47% vs 20%)."
+ */
+function combine(diffList, max = 3) {
+  const by = new Map();
+  for (const d of diffList) {
+    const k = d.kind + '|' + d.name;
+    if (!by.has(k)) by.set(k, { kind: d.kind, name: d.name, items: [] });
+    by.get(k).items.push(d);
+  }
+  const strength = (d) => Math.abs(Math.log(d.lift || 1));
+  const out = [];
+  for (const g of by.values()) {
+    g.items.sort((a, b) => strength(b) - strength(a));
+    g.items = g.items.slice(0, max);
+    const parts = g.items.map((d) => {
+      const up = d.value > d.base;
+      const words = d.metric.startsWith('lang:') ? [`use ${d.metric.slice(5)} more`, `use ${d.metric.slice(5)} less`] : PHRASE[d.metric];
+      const nums = d.metric === 'medianWords' ? `${Math.round(d.value)} words vs ${Math.round(d.base)}` : `${Math.round(d.value * 100)}% vs ${Math.round(d.base * 100)}%`;
+      return `${words[up ? 0 : 1]} (${nums})`;
+    });
+    const list = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0];
+    const lead = g.kind === 'person' ? `When ${g.name} comes up, you` : `On ${g.name}, you`;
+    out.push({ ...g, strength: strength(g.items[0]), text: `${lead} ${list}.` });
+  }
+  return out.sort((a, b) => b.strength - a.strength);
+}
+
 /** Where a context departs from your baseline, strongest first. */
 function diffs(kind, name, p, base, langNames, minN) {
   const out = [];
@@ -172,7 +213,10 @@ function compute(events, local, c) {
     const about = e.about || [];
     projById.set(e.id, isHub(e.project) && about.length && !about.includes(sp) ? about[0] : sp);
   }
-  const projOfPrompt = (e) => projById.get(e.id) || '(no single project)';
+  // Running your day (your OS itself, general sessions) is not a project: it gets one row, last.
+  const DAY = 'Day to day';
+  const dayLabels = new Set(['(no single project)', ...(c.dayToDay || [])]);
+  const projOfPrompt = (e) => { const p = projById.get(e.id) || '(no single project)'; return dayLabels.has(p) ? DAY : p; };
   const tonesById = new Map((local.tones || []).map((t) => [t.id, t]));
   for (const e of you) { const t = tonesById.get(e.id); if (t) e.tone = t; }
 
@@ -240,7 +284,8 @@ function compute(events, local, c) {
   const projectList = Object.values(projects).map((p) => ({
     name: p.name, prompts: p.prompts, words: p.words, minutes: Math.round(projectMinutes[p.name] || 0), tools: p.tools,
     weekly: weeks.map((w) => p.weeks[w] || 0),
-  })).sort((a, b) => b.minutes - a.minutes || b.prompts - a.prompts);
+    day: p.name === DAY,
+  })).sort((a, b) => (a.day - b.day) || b.minutes - a.minutes || b.prompts - a.prompts);
 
   // Words (local-only data).
   const termCount = {}; const bigramCount = {};
@@ -261,7 +306,7 @@ function compute(events, local, c) {
   for (const p of projectList) {
     const list = you.filter((e) => projOfPrompt(e) === p.name);
     projectProfiles[p.name] = profile(list, parts, langNames);
-    contextDiffs.push(...diffs('project', p.name, projectProfiles[p.name], base, langNames, 25));
+    if (!p.day) contextDiffs.push(...diffs('project', p.name, projectProfiles[p.name], base, langNames, 25));
   }
   const peopleById = new Map((local.people || []).map((r) => [r.id, r.people]));
   const byPerson = {};
@@ -368,7 +413,7 @@ function compute(events, local, c) {
       base,
       timeProfiles,
     },
-    contexts: { diffs: contextDiffs.slice(0, 40) },
+    contexts: { diffs: contextDiffs.slice(0, 40), combined: combine(contextDiffs) },
     mood: { weeks: moodWeeks, days: moodDays, scored: you.filter((e) => e.tone).length },
     people,
     machine: {
@@ -383,4 +428,4 @@ function compute(events, local, c) {
   };
 }
 
-module.exports = { compute, priceFor, costOf, isoWeek, localParts, profile, diffs, PRICES };
+module.exports = { combine, compute, priceFor, costOf, isoWeek, localParts, profile, diffs, PRICES };
