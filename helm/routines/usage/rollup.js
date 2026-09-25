@@ -74,6 +74,7 @@ function modelRead(system, input, c, spendFile) {
 
 function rollup(opts = {}) {
   ingest();
+  try { require('../voice/build').build(); } catch { /* voice cards are optional */ }
   const c = loadUsageConfig();
   const P = store.paths(c.dir);
   const parts = localParts(c.timezone);

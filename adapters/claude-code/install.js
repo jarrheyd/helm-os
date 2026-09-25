@@ -46,6 +46,24 @@ function wireHooks(remove) {
   return 'wired';
 }
 
+// Draft and send tools the voice check gates; the same family the deslop send gate matches.
+const SEND_MATCH = 'mcp__.*__(send_message|reply|forward|create_draft|update_draft|discord_send|discord_reply_to_forum|gmail_draft|gmail_send_email|outlook_send_mail|outlook_create_draft|outlook_create_reply_draft|outlook_create_reply_all_draft|outlook_update_draft|teams_send_channel_message|teams_reply_channel_message|teams_send_chat_message)';
+
+/** The voice check: blocks a draft that is out of your range for that channel. */
+function wireVoiceHook(vault, remove) {
+  const p = settingsPath();
+  const s = readJson(p, {});
+  s.hooks = s.hooks || {};
+  s.hooks.PreToolUse = (s.hooks.PreToolUse || []).filter((e) => !(e.hooks || []).some((h) => /routines\/voice\/hook\.js/.test(h.command || '')));
+  if (!remove) {
+    if (fs.existsSync(p)) fs.copyFileSync(p, p + '.bak.' + Date.now());
+    const cmd = `HELM_VAULT="${vault}" node "${path.join(REPO, 'helm', 'routines', 'voice', 'hook.js')}"`;
+    s.hooks.PreToolUse.push({ matcher: SEND_MATCH, hooks: [{ type: 'command', command: cmd, timeout: 5 }] });
+  }
+  writeJson(p, s);
+  return remove ? 'removed' : 'wired';
+}
+
 function loadConfig() {
   const file = process.env.HELM_CONFIG || (process.env.HELM_VAULT && path.join(process.env.HELM_VAULT, 'os.config.json'));
   if (!file || !fs.existsSync(file)) return null;
@@ -79,6 +97,7 @@ function main() {
   const hookResult = wireHooks(remove);
   const cfg = loadConfig();
   const usage = scheduleUsage(cfg, remove);
+  const voice = cfg && cfg.paths ? wireVoiceHook(cfg.paths.vaultRoot, remove) : null;
   if (remove) { console.log('claude-code adapter: hooks removed.' + (usage ? ' usage schedule removed.' : '')); return; }
   const tasks = scaffoldTasks(cfg);
   console.log(`claude-code adapter: write-ledger hooks ${hookResult} in ${settingsPath()}.`);
@@ -88,6 +107,7 @@ function main() {
   } else {
     console.log('no config found (set HELM_VAULT or HELM_CONFIG) - skipped scheduled runs.');
   }
+  if (voice) console.log(`voice check hook ${voice} in ${settingsPath()}.`);
   if (usage && usage.plists) console.log(`usage: nightly rollup scheduled (launchctl bootstrap gui/$(id -u) ${usage.plists.map((f) => `"${f}"`).join(' ')})`);
   if (usage && usage.cron) console.log('usage: add to crontab:\n  ' + usage.cron.join('\n  '));
 }
@@ -99,4 +119,4 @@ function scheduleUsage(cfg, remove) {
 }
 
 if (require.main === module) main();
-module.exports = { wireHooks, scaffoldTasks, loadConfig, settingsPath };
+module.exports = { wireHooks, wireVoiceHook, scaffoldTasks, loadConfig, settingsPath, SEND_MATCH };

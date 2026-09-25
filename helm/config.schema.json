@@ -93,10 +93,40 @@
       "type": "object",
       "properties": {
         "profile": {
+          "type": "string"
+        },
+        "whatsappDb": {
           "type": "string",
-          "description": "Vault-relative path to the voice profile (default Personal/profile.md)."
+          "description": "Path to the WhatsApp bridge's store/messages.db, read-only. Leave out if you have no bridge."
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "telegram",
+              "discord",
+              "email",
+              "gchat",
+              "teams"
+            ]
+          }
+        },
+        "minSends": {
+          "type": "number",
+          "description": "Sends needed before a card can block a draft, and before a person gets their own card. Default 30."
+        },
+        "block": {
+          "type": "boolean",
+          "description": "false = the check only warns. Default true."
+        },
+        "cardDir": {
+          "type": "string",
+          "description": "Where the readable cards go. Default Personal/voice in the vault."
         }
-      }
+      },
+      "description": "Voice: your profile file plus measured voice cards from your own sends."
     },
     "connectors": {
       "type": "object",
@@ -189,7 +219,16 @@
     "identityIds": {
       "type": "object",
       "description": "The user's own ids per connector, used to tell self from others (e.g. Discord authorId/guildId).",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "whatsapp": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Your own WhatsApp ids (phone or lid), so notes to self are skipped."
+        }
+      }
     },
     "projects": {
       "type": "array",

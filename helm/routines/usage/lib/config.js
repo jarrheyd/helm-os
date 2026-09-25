@@ -51,6 +51,13 @@ function loadUsageConfig() {
     hubPaths: (u.hubPaths || []).concat(vault ? [vault] : []),
     prices: u.prices || {},
     model: u.model !== false,
+    voice: {
+      channels: (cfg.voice && cfg.voice.channels) || ['whatsapp', 'telegram', 'discord', 'email', 'gchat', 'teams'],
+      whatsappDb: (cfg.voice && cfg.voice.whatsappDb) || '',
+      minSends: (cfg.voice && cfg.voice.minSends) || 30,
+      block: !(cfg.voice && cfg.voice.block === false),
+      cardDir: process.env.HELM_VOICE_CARDS || (cfg.voice && cfg.voice.cardDir) || (vault ? path.join(vault, 'Personal', 'voice') : path.join(dir, 'voice')),
+    },
   };
 }
 

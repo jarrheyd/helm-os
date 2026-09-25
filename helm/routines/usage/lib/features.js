@@ -35,7 +35,7 @@ function proseOf(text) {
 }
 
 function tokens(text) {
-  return (String(text).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/gu) || []).map((w) => w.replace(/'/g, ''));
+  return (String(text).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'\u2019-]*/gu) || []).map((w) => w.replace(/['\u2019]/g, ''));
 }
 
 /**

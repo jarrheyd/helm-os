@@ -10,6 +10,7 @@ It's a framework, not a service. You clone it into your own vault, run the setup
 - **project tracking**: one runner watches every project you list in your config - its channels, its intake, its status. Add a project by adding a row, not by writing code.
 - **no double-writes**: a ledger remembers every ticket and comment it made, and a hook blocks a duplicate before it happens, on any tracker connector. This is the part that stops the OS opening a second ticket for something it already filed.
 - **usage**: reads the Claude Code and Codex transcripts already on your disk and shows you how you work with AI - when, on what, in which words, in what mood, and where you change by project or person. A live page on localhost, plus day and week files every night. It splits what you typed from what your OS did, keeps anything built from your words in a `.nosync` folder, and scores tone with a small classifier it trains once, so per-message scoring costs no tokens.
+- **voice**: cards of how you actually write in each channel and to each person, measured from your own sent messages, and a check that stops a draft before you see it when it doesn't sound like you (too long, a greeting you never use, capitals where you write lowercase).
 
 ## Setup
 
