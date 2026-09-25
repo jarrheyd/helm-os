@@ -27,6 +27,7 @@ const STRIP_BLOCKS = [
   /<pasted_content[^>]*>[\s\S]*?<\/pasted_content>/g,
   /\[Image[^\]]*\]/g,
   /@"[^"]+"/g,
+  /'(\/|~\/)[^'\n]+'/g, // a dragged-in file path, quoted
   /^# Files mentioned by the user:[\s\S]*?## My request[^\n]*\n?/m,
 ];
 
