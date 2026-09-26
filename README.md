@@ -9,8 +9,7 @@ It's a framework, not a service. You clone it into your own vault, run the setup
 - **the brief**: morning, noon and evening it reads your email, chats, meetings and tracker boards and hands you one thing to read, grouped by project, leading with what needs you.
 - **project tracking**: one runner watches every project you list in your config - its channels, its intake, its status. Add a project by adding a row, not by writing code.
 - **no double-writes**: a ledger remembers every ticket and comment it made, and a hook blocks a duplicate before it happens, on any tracker connector. This is the part that stops the OS opening a second ticket for something it already filed.
-- **usage**: reads the Claude Code and Codex transcripts already on your disk and shows you how you work with AI - when, on what, in which words, in what mood, and where you change by project or person. A live page on localhost, plus day and week files every night. It splits what you typed from what your OS did, keeps anything built from your words in a `.nosync` folder, and scores tone with a small classifier it trains once, so per-message scoring costs no tokens.
-- **voice**: cards of how you actually write in each channel and to each person, measured from your own sent messages, and a check that stops a draft before you see it when it doesn't sound like you (too long, a greeting you never use, capitals where you write lowercase).
+- **usage and voice**: how you work with AI, and a check that keeps drafts sounding like you. These live in their own install, [inkprint](https://github.com/jarrheyd/inkprint), which works with or without helm-os. Run it from your OS folder and it keeps its data in your vault.
 
 ## Setup
 
@@ -50,7 +49,7 @@ Open Claude Code or Codex with your OS folder as the working directory, or point
 
 Faster path: in Claude Code, run the `os-init` skill from the clone instead of steps 2 to 4. It interviews you, grills where an answer is thin, detects the connectors you already have, writes the config, and wires the runner. Then delete the clone.
 
-To see your usage page, run `node "$OS/.helm/helm/routines/usage/serve.js" --open` with `HELM_VAULT` set. The first open reads every transcript you have (a minute or so); after that it only reads what's new. For mood, run `node tone.js teach` then `node tone.js train` once, from the same folder. The adapters schedule the nightly rollup as a plain `node` job. Details in `helm/routines/usage/SKILL.md`.
+For usage and voice, run `HELM_VAULT="$OS" npx inkprint` once. It sets up its own nightly job and the voice check.
 
 Good alongside it: [jarrheyd/skills](https://github.com/jarrheyd/skills) - deslop, qa-review, product-review. Not required.
 

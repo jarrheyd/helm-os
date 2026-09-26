@@ -88,12 +88,8 @@ function install(remove) {
 function main() {
   const remove = process.argv.includes('--remove');
   const done = install(remove);
-  const cfg = loadConfig();
-  const usage = cfg && cfg.paths && !(cfg.usage && cfg.usage.enabled === false)
-    ? require(path.resolve(__dirname, '..', '..', 'helm', 'routines', 'usage', 'schedule.js')).install(cfg.paths.vaultRoot, remove)
-    : null;
-  if (remove) { console.log(`codex adapter: removed ${done.length} launchd jobs.` + (usage ? ' usage schedule removed.' : '')); return; }
-  if (usage && usage.plists) console.log(`usage: nightly rollup scheduled: ${usage.plists.join(', ')}`);
+  if (remove) { console.log(`codex adapter: removed ${done.length} launchd jobs. For usage and voice, run: npx inkprint uninstall`); return; }
+  console.log('usage and voice: run `npx inkprint` with HELM_VAULT set to your OS folder.');
   console.log(`codex adapter: wrote ${done.length} launchd jobs to ${launchDir()}:`);
   for (const l of done) console.log(`  ${l} (launchctl load ${plistPath(l)})`);
   console.log('note: Codex has no per-tool-call hook, so the write-ledger dedup runs inside the routine, not as a blocking gate.');
