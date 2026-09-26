@@ -1,11 +1,11 @@
 'use strict';
 /**
- * Usage and voice live in inkprint now (npx inkprint). The files under
+ * Usage and voice live in inkprint now (npx github:jarrheyd/inkprint). The files under
  * helm/routines/usage and helm/routines/voice forward here so every path the
  * brief, the vault and old schedules call keeps working. Your vault settings
  * still apply: inkprint reads os.config.json through HELM_VAULT.
  *
- * Finds inkprint at INKPRINT_APP, else ~/.inkprint/app (where `npx inkprint` installs it).
+ * Finds inkprint at INKPRINT_APP, else ~/.inkprint/app (where `npx github:jarrheyd/inkprint` installs it).
  */
 const fs = require('fs');
 const os = require('os');
@@ -18,7 +18,7 @@ function appDir() { return process.env.INKPRINT_APP || path.join(os.homedir(), '
 function forward(rel) {
   const target = path.join(appDir(), rel);
   if (!fs.existsSync(target)) {
-    console.error('helm: usage and voice come from inkprint, which is not installed. Run: npx inkprint');
+    console.error('helm: usage and voice come from inkprint, which is not installed. Run: npx github:jarrheyd/inkprint');
     process.exit(0); // never break a brief or a hook over a missing optional piece
   }
   const r = spawnSync(process.execPath, [target, ...process.argv.slice(2)], { stdio: 'inherit', env: process.env });

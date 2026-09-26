@@ -49,7 +49,7 @@ Open Claude Code or Codex with your OS folder as the working directory, or point
 
 Faster path: in Claude Code, run the `os-init` skill from the clone instead of steps 2 to 4. It interviews you, grills where an answer is thin, detects the connectors you already have, writes the config, and wires the runner. Then delete the clone.
 
-For usage and voice, run `HELM_VAULT="$OS" npx inkprint` once. It sets up its own nightly job and the voice check.
+For usage and voice, run `HELM_VAULT="$OS" npx github:jarrheyd/inkprint` once. It sets up its own nightly job and the voice check.
 
 Good alongside it: [jarrheyd/skills](https://github.com/jarrheyd/skills) - deslop, qa-review, product-review. Not required.
 

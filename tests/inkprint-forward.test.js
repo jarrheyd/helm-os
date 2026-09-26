@@ -20,5 +20,5 @@ test('usage and voice paths forward to inkprint with args, stdin and exit code',
 test('without inkprint installed, the forwarders explain and never fail a brief or hook', () => {
   const r = spawnSync(process.execPath, [path.join(ROOT, 'helm', 'routines', 'voice', 'hook.js')], { input: '{}', encoding: 'utf8', env: { ...process.env, INKPRINT_APP: path.join(os.tmpdir(), 'no-such-inkprint') } });
   assert.strictEqual(r.status, 0);
-  assert.match(r.stderr, /npx inkprint/);
+  assert.match(r.stderr, /npx github:jarrheyd\/inkprint/);
 });

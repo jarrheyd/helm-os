@@ -88,8 +88,8 @@ function install(remove) {
 function main() {
   const remove = process.argv.includes('--remove');
   const done = install(remove);
-  if (remove) { console.log(`codex adapter: removed ${done.length} launchd jobs. For usage and voice, run: npx inkprint uninstall`); return; }
-  console.log('usage and voice: run `npx inkprint` with HELM_VAULT set to your OS folder.');
+  if (remove) { console.log(`codex adapter: removed ${done.length} launchd jobs. For usage and voice, run: npx github:jarrheyd/inkprint uninstall`); return; }
+  console.log('usage and voice: run `npx github:jarrheyd/inkprint` with HELM_VAULT set to your OS folder.');
   console.log(`codex adapter: wrote ${done.length} launchd jobs to ${launchDir()}:`);
   for (const l of done) console.log(`  ${l} (launchctl load ${plistPath(l)})`);
   console.log('note: Codex has no per-tool-call hook, so the write-ledger dedup runs inside the routine, not as a blocking gate.');

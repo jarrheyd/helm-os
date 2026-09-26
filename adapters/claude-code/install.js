@@ -78,7 +78,7 @@ function main() {
   const remove = process.argv.includes('--remove');
   const hookResult = wireHooks(remove);
   const cfg = loadConfig();
-  if (remove) { console.log('claude-code adapter: hooks removed. For usage and voice, run: npx inkprint uninstall'); return; }
+  if (remove) { console.log('claude-code adapter: hooks removed. For usage and voice, run: npx github:jarrheyd/inkprint uninstall'); return; }
   const tasks = scaffoldTasks(cfg);
   console.log(`claude-code adapter: write-ledger hooks ${hookResult} in ${settingsPath()}.`);
   if (tasks.length) {
@@ -87,7 +87,7 @@ function main() {
   } else {
     console.log('no config found (set HELM_VAULT or HELM_CONFIG) - skipped scheduled runs.');
   }
-  if (!cfg || !(cfg.usage && cfg.usage.enabled === false)) console.log(`usage and voice: run HELM_VAULT="${cfg && cfg.paths ? cfg.paths.vaultRoot : '<your OS folder>'}" npx inkprint (it keeps its data in your vault).`);
+  if (!cfg || !(cfg.usage && cfg.usage.enabled === false)) console.log(`usage and voice: run HELM_VAULT="${cfg && cfg.paths ? cfg.paths.vaultRoot : '<your OS folder>'}" npx github:jarrheyd/inkprint (it keeps its data in your vault).`);
 }
 
 if (require.main === module) main();
